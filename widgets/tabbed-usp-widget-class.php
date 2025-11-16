@@ -92,9 +92,10 @@ class Tabbed_USP_Widget extends Widget_Base {
             'tab_icon',
             [
                 'label' => 'Tab Icon',
-                'type' => Controls_Manager::MEDIA,
+                'type' => Controls_Manager::ICONS,
                 'default' => [
-                    'url' => '',
+                    'value' => 'fas fa-star',
+                    'library' => 'fa-solid',
                 ],
             ]
         );
@@ -119,14 +120,62 @@ class Tabbed_USP_Widget extends Widget_Base {
             ]
         );
 
-        // Content Items Repeater (Nested)
+        $this->add_control(
+            'tabs',
+            [
+                'label' => 'Tab Items',
+                'type' => Controls_Manager::REPEATER,
+                'fields' => $repeater->get_controls(),
+                'default' => [
+                    [
+                        'tab_title' => 'Connect',
+                        'tab_summary' => 'Join a community that connects you to opportunities.',
+                    ],
+                    [
+                        'tab_title' => 'Champion',
+                        'tab_summary' => 'Advocating for the London community where it matters.',
+                    ],
+                    [
+                        'tab_title' => 'Support',
+                        'tab_summary' => 'Support for you and the London economy.',
+                    ],
+                ],
+                'title_field' => '{{{ tab_title }}}',
+            ]
+        );
+
+        $this->end_controls_section();
+
+        // Content Items Section
+        $this->start_controls_section(
+            'content_items_section',
+            [
+                'label' => 'Cards (Content Items)',
+                'tab' => Controls_Manager::TAB_CONTENT,
+            ]
+        );
+
         $content_repeater = new Repeater();
+
+        $content_repeater->add_control(
+            'item_tab_select',
+            [
+                'label' => 'Assign to Tab',
+                'type' => Controls_Manager::SELECT,
+                'options' => $this->get_tab_options(),
+                'label_block' => true,
+            ]
+        );
 
         $content_repeater->add_control(
             'item_icon',
             [
-                'label' => 'Icon',
-                'type' => Controls_Manager::MEDIA,
+                'label' => 'Card Icon',
+                'type' => Controls_Manager::ICONS,
+                'default' => [
+                    'value' => 'fas fa-check',
+                    'library' => 'fa-solid',
+                ],
             ]
         );
 
@@ -167,64 +216,21 @@ class Tabbed_USP_Widget extends Widget_Base {
             ]
         );
 
-        $repeater->add_control(
+        $this->add_control(
             'content_items',
             [
-                'label' => 'Content Items',
+                'label' => 'Cards',
                 'type' => Controls_Manager::REPEATER,
                 'fields' => $content_repeater->get_controls(),
                 'default' => [
                     [
-                        'item_title' => 'Feature 1',
-                        'item_description' => 'Description for feature 1',
+                        'item_tab_select' => '0',
+                        'item_title' => 'Make Business Relationships',
+                        'item_description' => 'LCCI is a centre of connectivity for members in the heart of London.',
+                        'item_link_text' => 'About membership',
                     ],
                 ],
                 'title_field' => '{{{ item_title }}}',
-            ]
-        );
-
-        $this->add_control(
-            'tabs',
-            [
-                'label' => 'Tab Items',
-                'type' => Controls_Manager::REPEATER,
-                'fields' => $repeater->get_controls(),
-                'default' => [
-                    [
-                        'tab_title' => 'Connect',
-                        'tab_summary' => 'Join a community that connects you to opportunities.',
-                        'content_items' => [
-                            [
-                                'item_title' => 'Make Business Relationships',
-                                'item_description' => 'LCCI is a centre of connectivity for members in the heart of London.',
-                                'item_link_text' => 'About membership',
-                            ],
-                        ],
-                    ],
-                    [
-                        'tab_title' => 'Champion',
-                        'tab_summary' => 'Advocating for the London community where it matters.',
-                        'content_items' => [
-                            [
-                                'item_title' => 'Policy and Campaigning',
-                                'item_description' => 'We constantly engage with members to understand and then champion their interests.',
-                                'item_link_text' => 'Learn more',
-                            ],
-                        ],
-                    ],
-                    [
-                        'tab_title' => 'Support',
-                        'tab_summary' => 'Support for you and the London economy.',
-                        'content_items' => [
-                            [
-                                'item_title' => 'Member Services',
-                                'item_description' => 'We deliver dedicated support services to benefit hundreds of businesses every year.',
-                                'item_link_text' => 'Membership Overview',
-                            ],
-                        ],
-                    ],
-                ],
-                'title_field' => '{{{ tab_title }}}',
             ]
         );
 
@@ -267,6 +273,18 @@ class Tabbed_USP_Widget extends Widget_Base {
         );
 
         $this->end_controls_section();
+    }
+
+    protected function get_tab_options() {
+        $settings = $this->get_settings();
+        $tabs = isset($settings['tabs']) ? $settings['tabs'] : [];
+        $options = [];
+        
+        foreach ($tabs as $index => $tab) {
+            $options[$index] = !empty($tab['tab_title']) ? $tab['tab_title'] : 'Tab ' . ($index + 1);
+        }
+        
+        return $options;
     }
 
     protected function render() {
@@ -348,7 +366,11 @@ class Tabbed_USP_Widget extends Widget_Base {
                     width: 40px;
                     height: 40px;
                     flex-shrink: 0;
-                    object-fit: contain;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 24px;
+                    color: <?php echo esc_attr($settings['secondary_color']); ?>;
                 }
                 #<?php echo esc_attr($widget_id); ?> .tusp-tab-content-wrap {
                     flex: 1;
@@ -404,11 +426,15 @@ class Tabbed_USP_Widget extends Widget_Base {
                     padding: 12px;
                     flex-shrink: 0;
                 }
-                #<?php echo esc_attr($widget_id); ?> .tusp-item-icon {
+                #<?php echo esc_attr($widget_id); ?> .tusp-item-icon-wrapper svg {
                     width: 100%;
                     height: 100%;
-                    object-fit: contain;
-                    filter: brightness(0) invert(1);
+                    fill: white;
+                    color: white;
+                }
+                #<?php echo esc_attr($widget_id); ?> .tusp-item-icon-wrapper i {
+                    font-size: 40px;
+                    color: white;
                 }
                 #<?php echo esc_attr($widget_id); ?> .tusp-item-content {
                     display: flex;
@@ -453,18 +479,17 @@ class Tabbed_USP_Widget extends Widget_Base {
                         grid-template-columns: 1fr;
                     }
                     #<?php echo esc_attr($widget_id); ?> .tusp-tab-list {
-                        flex-direction: row;
-                        overflow-x: auto;
-                        gap: 10px;
+                        flex-direction: column;
+                        gap: 0;
                     }
                     #<?php echo esc_attr($widget_id); ?> .tusp-tab-button {
-                        border-left: none;
-                        border-bottom: 4px solid transparent;
-                        min-width: 200px;
+                        border-left: 4px solid transparent;
+                        border-bottom: none;
+                        padding: 20px;
                     }
                     #<?php echo esc_attr($widget_id); ?> .tusp-tab-button.active {
-                        border-left: none;
-                        border-bottom-color: <?php echo esc_attr($settings['primary_color']); ?>;
+                        border-left-color: <?php echo esc_attr($settings['primary_color']); ?>;
+                        border-bottom: none;
                     }
                 }
 
@@ -513,10 +538,10 @@ class Tabbed_USP_Widget extends Widget_Base {
                         <?php foreach ($settings['tabs'] as $index => $tab) : ?>
                             <button class="tusp-tab-button <?php echo $index === 0 ? 'active' : ''; ?>" 
                                     data-tab="<?php echo esc_attr($index); ?>">
-                                <?php if (!empty($tab['tab_icon']['url'])) : ?>
-                                    <img src="<?php echo esc_url($tab['tab_icon']['url']); ?>" 
-                                         alt="<?php echo esc_attr($tab['tab_title']); ?>" 
-                                         class="tusp-tab-icon">
+                                <?php if (!empty($tab['tab_icon'])) : ?>
+                                    <div class="tusp-tab-icon">
+                                        <?php \Elementor\Icons_Manager::render_icon($tab['tab_icon'], ['aria-hidden' => 'true']); ?>
+                                    </div>
                                 <?php endif; ?>
                                 <div class="tusp-tab-content-wrap">
                                     <h3 class="tusp-tab-title"><?php echo esc_html($tab['tab_title']); ?></h3>
@@ -531,33 +556,36 @@ class Tabbed_USP_Widget extends Widget_Base {
                             <div class="tusp-content-panel <?php echo $index === 0 ? 'active' : ''; ?>" 
                                  data-panel="<?php echo esc_attr($index); ?>">
                                 <div class="tusp-items-grid">
-                                    <?php if (!empty($tab['content_items'])) : ?>
-                                        <?php foreach ($tab['content_items'] as $item) : ?>
-                                            <div class="tusp-item">
-                                                <?php if (!empty($item['item_icon']['url'])) : ?>
-                                                    <div class="tusp-item-icon-wrapper">
-                                                        <img src="<?php echo esc_url($item['item_icon']['url']); ?>" 
-                                                             alt="<?php echo esc_attr($item['item_title']); ?>" 
-                                                             class="tusp-item-icon">
-                                                    </div>
-                                                <?php endif; ?>
-                                                <div class="tusp-item-content">
-                                                    <h4 class="tusp-item-title"><?php echo esc_html($item['item_title']); ?></h4>
-                                                    <?php if (!empty($item['item_description'])) : ?>
-                                                        <p class="tusp-item-description"><?php echo esc_html($item['item_description']); ?></p>
-                                                    <?php endif; ?>
-                                                    <?php if (!empty($item['item_link_text'])) : ?>
-                                                        <a href="<?php echo esc_url($item['item_link']['url']); ?>" class="tusp-item-link">
-                                                            <span><?php echo esc_html($item['item_link_text']); ?></span>
-                                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0.04 0 13.16 11.99">
-                                                                <path d="M13.2 5.999a.986.986 0 00-.254-.619L7.937.28a1.112 1.112 0 00-1.37-.075.91.91 0 00.01 1.313L10.099 5.1H.939a.9.9 0 100 1.8h9.16l-3.522 3.582a.961.961 0 00-.01 1.313 1.1 1.1 0 001.37-.075l5.009-5.1a.847.847 0 00.254-.619z"/>
-                                                            </svg>
-                                                        </a>
-                                                    <?php endif; ?>
+                                    <?php
+                                    $items = isset($settings['content_items']) ? $settings['content_items'] : [];
+                                    foreach ($items as $item) :
+                                        if (!empty($item['item_tab_select']) && $item['item_tab_select'] == $index) :
+                                    ?>
+                                        <div class="tusp-item">
+                                            <?php if (!empty($item['item_icon'])) : ?>
+                                                <div class="tusp-item-icon-wrapper">
+                                                    <?php \Elementor\Icons_Manager::render_icon($item['item_icon'], ['aria-hidden' => 'true']); ?>
                                                 </div>
+                                            <?php endif; ?>
+                                            <div class="tusp-item-content">
+                                                <h4 class="tusp-item-title"><?php echo esc_html($item['item_title']); ?></h4>
+                                                <?php if (!empty($item['item_description'])) : ?>
+                                                    <p class="tusp-item-description"><?php echo esc_html($item['item_description']); ?></p>
+                                                <?php endif; ?>
+                                                <?php if (!empty($item['item_link_text'])) : ?>
+                                                    <a href="<?php echo esc_url($item['item_link']['url']); ?>" class="tusp-item-link">
+                                                        <span><?php echo esc_html($item['item_link_text']); ?></span>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0.04 0 13.16 11.99">
+                                                            <path d="M13.2 5.999a.986.986 0 00-.254-.619L7.937.28a1.112 1.112 0 00-1.37-.075.91.91 0 00.01 1.313L10.099 5.1H.939a.9.9 0 100 1.8h9.16l-3.522 3.582a.961.961 0 00-.01 1.313 1.1 1.1 0 001.37-.075l5.009-5.1a.847.847 0 00.254-.619z"/>
+                                                        </svg>
+                                                    </a>
+                                                <?php endif; ?>
                                             </div>
-                                        <?php endforeach; ?>
-                                    <?php endif; ?>
+                                        </div>
+                                    <?php 
+                                        endif;
+                                    endforeach;
+                                    ?>
                                 </div>
                             </div>
                         <?php endforeach; ?>
