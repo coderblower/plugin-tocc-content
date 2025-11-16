@@ -120,52 +120,8 @@ class Tabbed_USP_Widget extends Widget_Base {
             ]
         );
 
-        $this->add_control(
-            'tabs',
-            [
-                'label' => 'Tab Items',
-                'type' => Controls_Manager::REPEATER,
-                'fields' => $repeater->get_controls(),
-                'default' => [
-                    [
-                        'tab_title' => 'Connect',
-                        'tab_summary' => 'Join a community that connects you to opportunities.',
-                    ],
-                    [
-                        'tab_title' => 'Champion',
-                        'tab_summary' => 'Advocating for the London community where it matters.',
-                    ],
-                    [
-                        'tab_title' => 'Support',
-                        'tab_summary' => 'Support for you and the London economy.',
-                    ],
-                ],
-                'title_field' => '{{{ tab_title }}}',
-            ]
-        );
-
-        $this->end_controls_section();
-
-        // Content Items Section
-        $this->start_controls_section(
-            'content_items_section',
-            [
-                'label' => 'Cards (Content Items)',
-                'tab' => Controls_Manager::TAB_CONTENT,
-            ]
-        );
-
+        // Content Items Repeater (Nested inside tabs)
         $content_repeater = new Repeater();
-
-        $content_repeater->add_control(
-            'item_tab_select',
-            [
-                'label' => 'Assign to Tab',
-                'type' => Controls_Manager::SELECT,
-                'options' => $this->get_tab_options(),
-                'label_block' => true,
-            ]
-        );
 
         $content_repeater->add_control(
             'item_icon',
@@ -216,7 +172,7 @@ class Tabbed_USP_Widget extends Widget_Base {
             ]
         );
 
-        $this->add_control(
+        $repeater->add_control(
             'content_items',
             [
                 'label' => 'Cards',
@@ -224,13 +180,56 @@ class Tabbed_USP_Widget extends Widget_Base {
                 'fields' => $content_repeater->get_controls(),
                 'default' => [
                     [
-                        'item_tab_select' => '0',
-                        'item_title' => 'Make Business Relationships',
-                        'item_description' => 'LCCI is a centre of connectivity for members in the heart of London.',
-                        'item_link_text' => 'About membership',
+                        'item_title' => 'Feature 1',
+                        'item_description' => 'Description for feature 1',
                     ],
                 ],
                 'title_field' => '{{{ item_title }}}',
+            ]
+        );
+
+        $this->add_control(
+            'tabs',
+            [
+                'label' => 'Tab Items',
+                'type' => Controls_Manager::REPEATER,
+                'fields' => $repeater->get_controls(),
+                'default' => [
+                    [
+                        'tab_title' => 'Connect',
+                        'tab_summary' => 'Join a community that connects you to opportunities.',
+                        'content_items' => [
+                            [
+                                'item_title' => 'Make Business Relationships',
+                                'item_description' => 'LCCI is a centre of connectivity for members in the heart of London.',
+                                'item_link_text' => 'About membership',
+                            ],
+                        ],
+                    ],
+                    [
+                        'tab_title' => 'Champion',
+                        'tab_summary' => 'Advocating for the London community where it matters.',
+                        'content_items' => [
+                            [
+                                'item_title' => 'Policy and Campaigning',
+                                'item_description' => 'We constantly engage with members to understand and then champion their interests.',
+                                'item_link_text' => 'Learn more',
+                            ],
+                        ],
+                    ],
+                    [
+                        'tab_title' => 'Support',
+                        'tab_summary' => 'Support for you and the London economy.',
+                        'content_items' => [
+                            [
+                                'item_title' => 'Member Services',
+                                'item_description' => 'We deliver dedicated support services to benefit hundreds of businesses every year.',
+                                'item_link_text' => 'Membership Overview',
+                            ],
+                        ],
+                    ],
+                ],
+                'title_field' => '{{{ tab_title }}}',
             ]
         );
 
@@ -273,18 +272,6 @@ class Tabbed_USP_Widget extends Widget_Base {
         );
 
         $this->end_controls_section();
-    }
-
-    protected function get_tab_options() {
-        $settings = $this->get_settings();
-        $tabs = isset($settings['tabs']) ? $settings['tabs'] : [];
-        $options = [];
-        
-        foreach ($tabs as $index => $tab) {
-            $options[$index] = !empty($tab['tab_title']) ? $tab['tab_title'] : 'Tab ' . ($index + 1);
-        }
-        
-        return $options;
     }
 
     protected function render() {
@@ -557,9 +544,8 @@ class Tabbed_USP_Widget extends Widget_Base {
                                  data-panel="<?php echo esc_attr($index); ?>">
                                 <div class="tusp-items-grid">
                                     <?php
-                                    $items = isset($settings['content_items']) ? $settings['content_items'] : [];
+                                    $items = isset($tab['content_items']) ? $tab['content_items'] : [];
                                     foreach ($items as $item) :
-                                        if (!empty($item['item_tab_select']) && $item['item_tab_select'] == $index) :
                                     ?>
                                         <div class="tusp-item">
                                             <?php if (!empty($item['item_icon'])) : ?>
@@ -583,7 +569,6 @@ class Tabbed_USP_Widget extends Widget_Base {
                                             </div>
                                         </div>
                                     <?php 
-                                        endif;
                                     endforeach;
                                     ?>
                                 </div>
