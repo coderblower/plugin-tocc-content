@@ -120,7 +120,7 @@ class Tabbed_USP_Widget extends Widget_Base {
             ]
         );
 
-        // Cards Repeater inside tabs with different name to avoid conflict
+        // ---------- CARDS REPEATER (nested inside Tabs) ----------
         $cards_repeater = new Repeater();
 
         $cards_repeater->add_control(
@@ -166,16 +166,32 @@ class Tabbed_USP_Widget extends Widget_Base {
             [
                 'label' => 'Link URL',
                 'type' => Controls_Manager::URL,
-                'default' => [
-                    'url' => '#',
-                ],
+                'default' => [ 'url' => '#' ],
             ]
         );
 
+        // Add a CUSTOM "Add Card" button that won't conflict with parent
+        $repeater->add_control(
+            'custom_add_card_button',
+            [
+                'label' => '',
+                'type' => Controls_Manager::RAW_HTML,
+                'raw' => '<div class="elementor-control-field">
+                    <button type="button" class="custom-add-card-button elementor-button" 
+                            style="width: 100%; margin: 10px 0; background: #93003c; color: white; border: none; padding: 12px; cursor: pointer; border-radius: 3px; font-size: 13px;">
+                        <i class="eicon-plus-circle" style="margin-right: 5px;"></i>
+                        <strong>Add New Card</strong>
+                    </button>
+                </div>',
+                'separator' => 'before',
+            ]
+        );
+
+        // Add nested repeater for cards
         $repeater->add_control(
             'tab_cards',
             [
-                'label' => 'Add Cards',
+                'label' => 'Cards in This Tab',
                 'type' => Controls_Manager::REPEATER,
                 'fields' => $cards_repeater->get_controls(),
                 'default' => [
@@ -185,6 +201,7 @@ class Tabbed_USP_Widget extends Widget_Base {
                     ],
                 ],
                 'title_field' => '{{{ card_title }}}',
+                'prevent_empty' => false,
             ]
         );
 
