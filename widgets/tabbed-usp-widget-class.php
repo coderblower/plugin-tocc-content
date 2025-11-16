@@ -1,6 +1,6 @@
 <?php
 /**
- * Tabbed USP Widget Class
+ * Tabbed USP Widget Class - Fixed Version
  * Save as: /widgets/tabbed-usp-widget-class.php
  */
 
@@ -86,7 +86,30 @@ class Tabbed_USP_Widget extends Widget_Base {
             ]
         );
 
+        $this->add_control(
+            'tabs_notice',
+            [
+                'type' => Controls_Manager::RAW_HTML,
+                'raw' => '<div style="padding: 10px; background: #fff3cd; border-left: 3px solid #ffc107; margin-bottom: 15px;">
+                    <strong>⚠️ Important:</strong><br>
+                    Give each tab a unique ID (e.g., connect, champion, support).<br>
+                    You\'ll use these IDs to assign cards to tabs in the next section.
+                </div>',
+            ]
+        );
+
         $repeater = new Repeater();
+
+        $repeater->add_control(
+            'tab_id',
+            [
+                'label' => 'Tab ID (unique)',
+                'type' => Controls_Manager::TEXT,
+                'default' => '',
+                'description' => 'Enter a unique ID (e.g., connect, champion, support). Use lowercase, no spaces.',
+                'label_block' => true,
+            ]
+        );
 
         $repeater->add_control(
             'tab_icon',
@@ -120,8 +143,71 @@ class Tabbed_USP_Widget extends Widget_Base {
             ]
         );
 
-        // ---------- CARDS REPEATER (nested inside Tabs) ----------
+        $this->add_control(
+            'tabs',
+            [
+                'label' => 'Tab Items',
+                'type' => Controls_Manager::REPEATER,
+                'fields' => $repeater->get_controls(),
+                'default' => [
+                    [
+                        'tab_id' => 'connect',
+                        'tab_title' => 'Connect',
+                        'tab_summary' => 'Join a community that connects you to opportunities.',
+                    ],
+                    [
+                        'tab_id' => 'champion',
+                        'tab_title' => 'Champion',
+                        'tab_summary' => 'Advocating for the London community where it matters.',
+                    ],
+                    [
+                        'tab_id' => 'support',
+                        'tab_title' => 'Support',
+                        'tab_summary' => 'Support for you and the London economy.',
+                    ],
+                ],
+                'title_field' => '{{{ tab_title }}} (ID: {{{ tab_id }}})',
+            ]
+        );
+
+        $this->end_controls_section();
+
+        // Cards Section (Separate from Tabs)
+        $this->start_controls_section(
+            'cards_section',
+            [
+                'label' => 'Cards / Content Items',
+                'tab' => Controls_Manager::TAB_CONTENT,
+            ]
+        );
+
+        $this->add_control(
+            'cards_info',
+            [
+                'type' => Controls_Manager::RAW_HTML,
+                'raw' => '<div style="padding: 10px; background: #e8f5e9; border-left: 3px solid #4caf50; margin-bottom: 15px;">
+                    <strong>💡 How to use:</strong><br>
+                    1. Create your tabs above first<br>
+                    2. Note each tab\'s ID<br>
+                    3. Create cards below and assign them to tabs using the dropdown<br>
+                    4. <strong>After adding tabs, refresh the page</strong> to see them in the dropdown
+                </div>',
+            ]
+        );
+
         $cards_repeater = new Repeater();
+
+        $cards_repeater->add_control(
+            'assign_to_tab',
+            [
+                'label' => 'Assign to Tab',
+                'type' => Controls_Manager::TEXT,
+                'default' => '',
+                'description' => 'Enter the Tab ID (e.g., connect, champion, support)',
+                'label_block' => true,
+                'placeholder' => 'Enter tab ID here'
+            ]
+        );
 
         $cards_repeater->add_control(
             'card_icon',
@@ -140,6 +226,7 @@ class Tabbed_USP_Widget extends Widget_Base {
             [
                 'label' => 'Title',
                 'type' => Controls_Manager::TEXT,
+                'default' => 'Feature Title',
                 'label_block' => true,
             ]
         );
@@ -149,6 +236,7 @@ class Tabbed_USP_Widget extends Widget_Base {
             [
                 'label' => 'Description',
                 'type' => Controls_Manager::TEXTAREA,
+                'default' => 'Feature description goes here.',
                 'rows' => 3,
             ]
         );
@@ -158,6 +246,7 @@ class Tabbed_USP_Widget extends Widget_Base {
             [
                 'label' => 'Link Text',
                 'type' => Controls_Manager::TEXT,
+                'default' => 'Learn more',
             ]
         );
 
@@ -170,83 +259,33 @@ class Tabbed_USP_Widget extends Widget_Base {
             ]
         );
 
-        // Add a CUSTOM "Add Card" button that won't conflict with parent
-        $repeater->add_control(
-            'custom_add_card_button',
+        $this->add_control(
+            'cards',
             [
-                'label' => '',
-                'type' => Controls_Manager::RAW_HTML,
-                'raw' => '<div class="elementor-control-field">
-                    <button type="button" class="custom-add-card-button elementor-button" 
-                            style="width: 100%; margin: 10px 0; background: #93003c; color: white; border: none; padding: 12px; cursor: pointer; border-radius: 3px; font-size: 13px;">
-                        <i class="eicon-plus-circle" style="margin-right: 5px;"></i>
-                        <strong>Add New Card</strong>
-                    </button>
-                </div>',
-                'separator' => 'before',
-            ]
-        );
-
-        // Add nested repeater for cards
-        $repeater->add_control(
-            'tab_cards',
-            [
-                'label' => 'Cards in This Tab',
+                'label' => 'Content Cards',
                 'type' => Controls_Manager::REPEATER,
                 'fields' => $cards_repeater->get_controls(),
                 'default' => [
                     [
-                        'card_title' => 'Feature 1',
-                        'card_description' => 'Description for feature 1',
+                        'assign_to_tab' => 'connect',
+                        'card_title' => 'Make Business Relationships',
+                        'card_description' => 'LCCI is a centre of connectivity for members in the heart of London.',
+                        'card_link_text' => 'About membership',
+                    ],
+                    [
+                        'assign_to_tab' => 'champion',
+                        'card_title' => 'Policy and Campaigning',
+                        'card_description' => 'We constantly engage with members to understand and then champion their interests.',
+                        'card_link_text' => 'Learn more',
+                    ],
+                    [
+                        'assign_to_tab' => 'support',
+                        'card_title' => 'Member Services',
+                        'card_description' => 'We deliver dedicated support services to benefit hundreds of businesses every year.',
+                        'card_link_text' => 'Membership Overview',
                     ],
                 ],
-                'title_field' => '{{{ card_title }}}',
-                'prevent_empty' => false,
-            ]
-        );
-
-        $this->add_control(
-            'tabs',
-            [
-                'label' => 'Tab Items',
-                'type' => Controls_Manager::REPEATER,
-                'fields' => $repeater->get_controls(),
-                'default' => [
-                    [
-                        'tab_title' => 'Connect',
-                        'tab_summary' => 'Join a community that connects you to opportunities.',
-                        'tab_cards' => [
-                            [
-                                'card_title' => 'Make Business Relationships',
-                                'card_description' => 'LCCI is a centre of connectivity for members in the heart of London.',
-                                'card_link_text' => 'About membership',
-                            ],
-                        ],
-                    ],
-                    [
-                        'tab_title' => 'Champion',
-                        'tab_summary' => 'Advocating for the London community where it matters.',
-                        'tab_cards' => [
-                            [
-                                'card_title' => 'Policy and Campaigning',
-                                'card_description' => 'We constantly engage with members to understand and then champion their interests.',
-                                'card_link_text' => 'Learn more',
-                            ],
-                        ],
-                    ],
-                    [
-                        'tab_title' => 'Support',
-                        'tab_summary' => 'Support for you and the London economy.',
-                        'tab_cards' => [
-                            [
-                                'card_title' => 'Member Services',
-                                'card_description' => 'We deliver dedicated support services to benefit hundreds of businesses every year.',
-                                'card_link_text' => 'Membership Overview',
-                            ],
-                        ],
-                    ],
-                ],
-                'title_field' => '{{{ tab_title }}}',
+                'title_field' => '{{{ card_title }}} → {{{ assign_to_tab }}}',
             ]
         );
 
@@ -291,9 +330,33 @@ class Tabbed_USP_Widget extends Widget_Base {
         $this->end_controls_section();
     }
 
+    /**
+     * Group cards by their assigned tab
+     */
+    protected function get_cards_by_tab($tab_id, $cards) {
+        if (empty($cards) || !is_array($cards)) {
+            return [];
+        }
+        
+        $tab_cards = [];
+        
+        foreach ($cards as $card) {
+            if (isset($card['assign_to_tab']) && $card['assign_to_tab'] === $tab_id) {
+                $tab_cards[] = $card;
+            }
+        }
+        
+        return $tab_cards;
+    }
+
     protected function render() {
         $settings = $this->get_settings_for_display();
         $widget_id = 'tusp-' . $this->get_id();
+        
+        // Ensure cards array exists
+        $cards = isset($settings['cards']) && is_array($settings['cards']) ? $settings['cards'] : [];
+        $tabs = isset($settings['tabs']) && is_array($settings['tabs']) ? $settings['tabs'] : [];
+        
         ?>
         <div class="tabbed-usp-widget" id="<?php echo esc_attr($widget_id); ?>">
             <style>
@@ -403,6 +466,16 @@ class Tabbed_USP_Widget extends Widget_Base {
                 #<?php echo esc_attr($widget_id); ?> .tusp-content-panel.active {
                     display: block;
                     animation: fadeIn 0.3s;
+                }
+                #<?php echo esc_attr($widget_id); ?> .tusp-empty-state {
+                    text-align: center;
+                    padding: 60px 20px;
+                    color: #999;
+                }
+                #<?php echo esc_attr($widget_id); ?> .tusp-empty-state i {
+                    font-size: 48px;
+                    margin-bottom: 20px;
+                    opacity: 0.3;
                 }
                 @keyframes fadeIn {
                     from { opacity: 0; transform: translateY(10px); }
@@ -537,62 +610,77 @@ class Tabbed_USP_Widget extends Widget_Base {
                     <?php endif; ?>
                 </div>
 
-                <div class="tusp-tabs-wrapper">
-                    <div class="tusp-tab-list">
-                        <?php foreach ($settings['tabs'] as $index => $tab) : ?>
-                            <button class="tusp-tab-button <?php echo $index === 0 ? 'active' : ''; ?>" 
-                                    data-tab="<?php echo esc_attr($index); ?>">
-                                <?php if (!empty($tab['tab_icon'])) : ?>
-                                    <div class="tusp-tab-icon">
-                                        <?php \Elementor\Icons_Manager::render_icon($tab['tab_icon'], ['aria-hidden' => 'true']); ?>
-                                    </div>
-                                <?php endif; ?>
-                                <div class="tusp-tab-content-wrap">
-                                    <h3 class="tusp-tab-title"><?php echo esc_html($tab['tab_title']); ?></h3>
-                                    <p class="tusp-tab-summary"><?php echo esc_html($tab['tab_summary']); ?></p>
-                                </div>
-                            </button>
-                        <?php endforeach; ?>
+                <?php if (empty($tabs)) : ?>
+                    <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 8px;">
+                        <p style="font-size: 18px; color: #999;">No tabs created yet. Please add tabs in the widget settings.</p>
                     </div>
-
-                    <div class="tusp-content-area">
-                        <?php foreach ($settings['tabs'] as $index => $tab) : ?>
-                            <div class="tusp-content-panel <?php echo $index === 0 ? 'active' : ''; ?>" 
-                                 data-panel="<?php echo esc_attr($index); ?>">
-                                <div class="tusp-items-grid">
-                                    <?php
-                                    $cards = isset($tab['tab_cards']) ? $tab['tab_cards'] : [];
-                                    foreach ($cards as $card) :
-                                    ?>
-                                        <div class="tusp-item">
-                                            <?php if (!empty($card['card_icon'])) : ?>
-                                                <div class="tusp-item-icon-wrapper">
-                                                    <?php \Elementor\Icons_Manager::render_icon($card['card_icon'], ['aria-hidden' => 'true']); ?>
-                                                </div>
-                                            <?php endif; ?>
-                                            <div class="tusp-item-content">
-                                                <h4 class="tusp-item-title"><?php echo esc_html($card['card_title']); ?></h4>
-                                                <?php if (!empty($card['card_description'])) : ?>
-                                                    <p class="tusp-item-description"><?php echo esc_html($card['card_description']); ?></p>
-                                                <?php endif; ?>
-                                                <?php if (!empty($card['card_link_text'])) : ?>
-                                                    <a href="<?php echo esc_url($card['card_link']['url']); ?>" class="tusp-item-link">
-                                                        <span><?php echo esc_html($card['card_link_text']); ?></span>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0.04 0 13.16 11.99">
-                                                            <path d="M13.2 5.999a.986.986 0 00-.254-.619L7.937.28a1.112 1.112 0 00-1.37-.075.91.91 0 00.01 1.313L10.099 5.1H.939a.9.9 0 100 1.8h9.16l-3.522 3.582a.961.961 0 00-.01 1.313 1.1 1.1 0 001.37-.075l5.009-5.1a.847.847 0 00.254-.619z"/>
-                                                        </svg>
-                                                    </a>
-                                                <?php endif; ?>
-                                            </div>
+                <?php else : ?>
+                    <div class="tusp-tabs-wrapper">
+                        <div class="tusp-tab-list">
+                            <?php foreach ($tabs as $index => $tab) : 
+                                $tab_id = !empty($tab['tab_id']) ? $tab['tab_id'] : 'tab-' . $index;
+                            ?>
+                                <button class="tusp-tab-button <?php echo $index === 0 ? 'active' : ''; ?>" 
+                                        data-tab="<?php echo esc_attr($tab_id); ?>">
+                                    <?php if (!empty($tab['tab_icon'])) : ?>
+                                        <div class="tusp-tab-icon">
+                                            <?php \Elementor\Icons_Manager::render_icon($tab['tab_icon'], ['aria-hidden' => 'true']); ?>
                                         </div>
-                                    <?php 
-                                    endforeach;
-                                    ?>
+                                    <?php endif; ?>
+                                    <div class="tusp-tab-content-wrap">
+                                        <h3 class="tusp-tab-title"><?php echo esc_html($tab['tab_title']); ?></h3>
+                                        <?php if (!empty($tab['tab_summary'])) : ?>
+                                            <p class="tusp-tab-summary"><?php echo esc_html($tab['tab_summary']); ?></p>
+                                        <?php endif; ?>
+                                    </div>
+                                </button>
+                            <?php endforeach; ?>
+                        </div>
+
+                        <div class="tusp-content-area">
+                            <?php foreach ($tabs as $index => $tab) : 
+                                $tab_id = !empty($tab['tab_id']) ? $tab['tab_id'] : 'tab-' . $index;
+                                $tab_cards = $this->get_cards_by_tab($tab_id, $cards);
+                            ?>
+                                <div class="tusp-content-panel <?php echo $index === 0 ? 'active' : ''; ?>" 
+                                     data-panel="<?php echo esc_attr($tab_id); ?>">
+                                    <?php if (empty($tab_cards)) : ?>
+                                        <div class="tusp-empty-state">
+                                            <i class="eicon-info-circle"></i>
+                                            <p>No cards assigned to this tab yet.<br>Go to "Cards / Content Items" section and assign cards to <strong><?php echo esc_html($tab['tab_title']); ?></strong> (ID: <?php echo esc_html($tab_id); ?>).</p>
+                                        </div>
+                                    <?php else : ?>
+                                        <div class="tusp-items-grid">
+                                            <?php foreach ($tab_cards as $card) : ?>
+                                                <div class="tusp-item">
+                                                    <?php if (!empty($card['card_icon'])) : ?>
+                                                        <div class="tusp-item-icon-wrapper">
+                                                            <?php \Elementor\Icons_Manager::render_icon($card['card_icon'], ['aria-hidden' => 'true']); ?>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                    <div class="tusp-item-content">
+                                                        <h4 class="tusp-item-title"><?php echo esc_html($card['card_title']); ?></h4>
+                                                        <?php if (!empty($card['card_description'])) : ?>
+                                                            <p class="tusp-item-description"><?php echo esc_html($card['card_description']); ?></p>
+                                                        <?php endif; ?>
+                                                        <?php if (!empty($card['card_link_text'])) : ?>
+                                                            <a href="<?php echo esc_url($card['card_link']['url']); ?>" class="tusp-item-link">
+                                                                <span><?php echo esc_html($card['card_link_text']); ?></span>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0.04 0 13.16 11.99">
+                                                                    <path d="M13.2 5.999a.986.986 0 00-.254-.619L7.937.28a1.112 1.112 0 00-1.37-.075.91.91 0 00.01 1.313L10.099 5.1H.939a.9.9 0 100 1.8h9.16l-3.522 3.582a.961.961 0 00-.01 1.313 1.1 1.1 0 001.37-.075l5.009-5.1a.847.847 0 00.254-.619z"/>
+                                                                </svg>
+                                                            </a>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
-                            </div>
-                        <?php endforeach; ?>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
-                </div>
+                <?php endif; ?>
             </div>
 
             <script>
@@ -605,13 +693,16 @@ class Tabbed_USP_Widget extends Widget_Base {
 
                     tabButtons.forEach(button => {
                         button.addEventListener('click', function() {
-                            const tabIndex = this.getAttribute('data-tab');
+                            const tabId = this.getAttribute('data-tab');
 
                             tabButtons.forEach(btn => btn.classList.remove('active'));
                             contentPanels.forEach(panel => panel.classList.remove('active'));
 
                             this.classList.add('active');
-                            widget.querySelector(`[data-panel="${tabIndex}"]`).classList.add('active');
+                            const targetPanel = widget.querySelector(`[data-panel="${tabId}"]`);
+                            if (targetPanel) {
+                                targetPanel.classList.add('active');
+                            }
                         });
                     });
                 })();
