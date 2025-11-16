@@ -38,43 +38,48 @@ jQuery(document).ready(function($) {
         return tabs;
     }
 
-    /**
-     * Update all card dropdowns with current tabs
-     */
-    function updateCardDropdowns() {
-        const tabs = getCurrentTabs();
-        
-        console.log('Updating dropdowns with tabs:', tabs);
+   /**
+ * Update all card dropdowns with current tabs
+ */
+function updateCardDropdowns() {
+    const tabs = getCurrentTabs();
+    
+    console.log('Updating dropdowns with tabs:', tabs);
 
-        // Find all "assign_to_tab" dropdowns in card repeater
-        $('.elementor-control[data-control-name="assign_to_tab"] select').each(function() {
-            const $select = $(this);
+    // Find all card repeater rows
+    $('.elementor-control[data-control-name="cards"] .elementor-repeater-row').each(function() {
+        // Find the select dropdown inside this card row
+        const $select = $(this).find('.elementor-control[data-control-name="assign_to_tab"] select');
+        
+        if ($select.length) {
             const currentValue = $select.val(); // Save current selection
             
-            // Clear existing options except first
-            $select.find('option').remove();
+            // Clear and rebuild options
+            $select.empty();
             
             // Add default option
             $select.append('<option value="">-- Select Tab --</option>');
             
             // Add tab options
             tabs.forEach(function(tab) {
-                $select.append(
-                    $('<option></option>')
-                        .attr('value', tab.id)
-                        .text(tab.title)
-                );
+                const $option = $('<option></option>')
+                    .attr('value', tab.id)
+                    .text(tab.title);
+                $select.append($option);
             });
             
             // Restore previous selection if still exists
-            if (currentValue && $select.find('option[value="' + currentValue + '"]').length) {
+            if (currentValue) {
                 $select.val(currentValue);
             }
-        });
+            
+            // Trigger change event so Elementor knows
+            $select.trigger('change');
+        }
+    });
 
-        console.log('Dropdowns updated!');
-    }
-
+    console.log('Dropdowns updated! Found ' + tabs.length + ' tabs');
+}
     /**
      * Initialize dropdowns when cards section opens
      */
