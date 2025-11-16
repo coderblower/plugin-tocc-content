@@ -121,28 +121,18 @@ class Tabbed_USP_Widget extends Widget_Base {
         );
 
         $repeater->add_control(
-            'content_items_divider',
+            'tab_item_1_title',
             [
-                'type' => Controls_Manager::DIVIDER,
-                'style' => 'thick',
+                'label' => 'Card 1 - Title',
+                'type' => Controls_Manager::TEXT,
+                'label_block' => true,
             ]
         );
 
         $repeater->add_control(
-            'cards_heading',
+            'tab_item_1_icon',
             [
-                'label' => 'Cards for this Tab',
-                'type' => Controls_Manager::HEADING,
-            ]
-        );
-
-        // Content Items Repeater (Nested inside tabs)
-        $content_repeater = new Repeater();
-
-        $content_repeater->add_control(
-            'item_icon',
-            [
-                'label' => 'Card Icon',
+                'label' => 'Card 1 - Icon',
                 'type' => Controls_Manager::ICONS,
                 'default' => [
                     'value' => 'fas fa-check',
@@ -151,59 +141,81 @@ class Tabbed_USP_Widget extends Widget_Base {
             ]
         );
 
-        $content_repeater->add_control(
-            'item_title',
+        $repeater->add_control(
+            'tab_item_1_description',
             [
-                'label' => 'Title',
-                'type' => Controls_Manager::TEXT,
-                'label_block' => true,
-            ]
-        );
-
-        $content_repeater->add_control(
-            'item_description',
-            [
-                'label' => 'Description',
+                'label' => 'Card 1 - Description',
                 'type' => Controls_Manager::TEXTAREA,
-                'rows' => 3,
-            ]
-        );
-
-        $content_repeater->add_control(
-            'item_link_text',
-            [
-                'label' => 'Link Text',
-                'type' => Controls_Manager::TEXT,
-            ]
-        );
-
-        $content_repeater->add_control(
-            'item_link',
-            [
-                'label' => 'Link URL',
-                'type' => Controls_Manager::URL,
-                'default' => [
-                    'url' => '#',
-                ],
+                'rows' => 2,
             ]
         );
 
         $repeater->add_control(
-            'content_items',
+            'tab_item_1_link_text',
             [
-                'label' => 'Cards',
-                'type' => Controls_Manager::REPEATER,
-                'fields' => $content_repeater->get_controls(),
-                'default' => [
-                    [
-                        'item_title' => 'Feature 1',
-                        'item_description' => 'Description for feature 1',
-                    ],
-                ],
-                'title_field' => '{{{ item_title }}}',
-                'prevent_empty' => false,
+                'label' => 'Card 1 - Link Text',
+                'type' => Controls_Manager::TEXT,
             ]
         );
+
+        $repeater->add_control(
+            'tab_item_1_link',
+            [
+                'label' => 'Card 1 - Link URL',
+                'type' => Controls_Manager::URL,
+                'default' => ['url' => '#'],
+            ]
+        );
+
+        // Add more card slots
+        for ($i = 2; $i <= 5; $i++) {
+            $repeater->add_control(
+                'tab_item_' . $i . '_title',
+                [
+                    'label' => 'Card ' . $i . ' - Title (Optional)',
+                    'type' => Controls_Manager::TEXT,
+                    'label_block' => true,
+                ]
+            );
+
+            $repeater->add_control(
+                'tab_item_' . $i . '_icon',
+                [
+                    'label' => 'Card ' . $i . ' - Icon',
+                    'type' => Controls_Manager::ICONS,
+                    'default' => [
+                        'value' => 'fas fa-check',
+                        'library' => 'fa-solid',
+                    ],
+                ]
+            );
+
+            $repeater->add_control(
+                'tab_item_' . $i . '_description',
+                [
+                    'label' => 'Card ' . $i . ' - Description',
+                    'type' => Controls_Manager::TEXTAREA,
+                    'rows' => 2,
+                ]
+            );
+
+            $repeater->add_control(
+                'tab_item_' . $i . '_link_text',
+                [
+                    'label' => 'Card ' . $i . ' - Link Text',
+                    'type' => Controls_Manager::TEXT,
+                ]
+            );
+
+            $repeater->add_control(
+                'tab_item_' . $i . '_link',
+                [
+                    'label' => 'Card ' . $i . ' - Link URL',
+                    'type' => Controls_Manager::URL,
+                    'default' => ['url' => '#'],
+                ]
+            );
+        }
 
         $this->add_control(
             'tabs',
@@ -215,35 +227,23 @@ class Tabbed_USP_Widget extends Widget_Base {
                     [
                         'tab_title' => 'Connect',
                         'tab_summary' => 'Join a community that connects you to opportunities.',
-                        'content_items' => [
-                            [
-                                'item_title' => 'Make Business Relationships',
-                                'item_description' => 'LCCI is a centre of connectivity for members in the heart of London.',
-                                'item_link_text' => 'About membership',
-                            ],
-                        ],
+                        'tab_item_1_title' => 'Make Business Relationships',
+                        'tab_item_1_description' => 'LCCI is a centre of connectivity for members in the heart of London.',
+                        'tab_item_1_link_text' => 'About membership',
                     ],
                     [
                         'tab_title' => 'Champion',
                         'tab_summary' => 'Advocating for the London community where it matters.',
-                        'content_items' => [
-                            [
-                                'item_title' => 'Policy and Campaigning',
-                                'item_description' => 'We constantly engage with members to understand and then champion their interests.',
-                                'item_link_text' => 'Learn more',
-                            ],
-                        ],
+                        'tab_item_1_title' => 'Policy and Campaigning',
+                        'tab_item_1_description' => 'We constantly engage with members to understand and then champion their interests.',
+                        'tab_item_1_link_text' => 'Learn more',
                     ],
                     [
                         'tab_title' => 'Support',
                         'tab_summary' => 'Support for you and the London economy.',
-                        'content_items' => [
-                            [
-                                'item_title' => 'Member Services',
-                                'item_description' => 'We deliver dedicated support services to benefit hundreds of businesses every year.',
-                                'item_link_text' => 'Membership Overview',
-                            ],
-                        ],
+                        'tab_item_1_title' => 'Member Services',
+                        'tab_item_1_description' => 'We deliver dedicated support services to benefit hundreds of businesses every year.',
+                        'tab_item_1_link_text' => 'Membership Overview',
                     ],
                 ],
                 'title_field' => '{{{ tab_title }}}',
@@ -561,23 +561,29 @@ class Tabbed_USP_Widget extends Widget_Base {
                                  data-panel="<?php echo esc_attr($index); ?>">
                                 <div class="tusp-items-grid">
                                     <?php
-                                    $items = isset($tab['content_items']) ? $tab['content_items'] : [];
-                                    foreach ($items as $item) :
+                                    // Loop through up to 5 cards per tab
+                                    for ($i = 1; $i <= 5; $i++) {
+                                        $title_key = "tab_item_{$i}_title";
+                                        if (!empty($tab[$title_key])) :
+                                            $icon_key = "tab_item_{$i}_icon";
+                                            $desc_key = "tab_item_{$i}_description";
+                                            $link_text_key = "tab_item_{$i}_link_text";
+                                            $link_key = "tab_item_{$i}_link";
                                     ?>
                                         <div class="tusp-item">
-                                            <?php if (!empty($item['item_icon'])) : ?>
+                                            <?php if (!empty($tab[$icon_key])) : ?>
                                                 <div class="tusp-item-icon-wrapper">
-                                                    <?php \Elementor\Icons_Manager::render_icon($item['item_icon'], ['aria-hidden' => 'true']); ?>
+                                                    <?php \Elementor\Icons_Manager::render_icon($tab[$icon_key], ['aria-hidden' => 'true']); ?>
                                                 </div>
                                             <?php endif; ?>
                                             <div class="tusp-item-content">
-                                                <h4 class="tusp-item-title"><?php echo esc_html($item['item_title']); ?></h4>
-                                                <?php if (!empty($item['item_description'])) : ?>
-                                                    <p class="tusp-item-description"><?php echo esc_html($item['item_description']); ?></p>
+                                                <h4 class="tusp-item-title"><?php echo esc_html($tab[$title_key]); ?></h4>
+                                                <?php if (!empty($tab[$desc_key])) : ?>
+                                                    <p class="tusp-item-description"><?php echo esc_html($tab[$desc_key]); ?></p>
                                                 <?php endif; ?>
-                                                <?php if (!empty($item['item_link_text'])) : ?>
-                                                    <a href="<?php echo esc_url($item['item_link']['url']); ?>" class="tusp-item-link">
-                                                        <span><?php echo esc_html($item['item_link_text']); ?></span>
+                                                <?php if (!empty($tab[$link_text_key])) : ?>
+                                                    <a href="<?php echo esc_url($tab[$link_key]['url']); ?>" class="tusp-item-link">
+                                                        <span><?php echo esc_html($tab[$link_text_key]); ?></span>
                                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0.04 0 13.16 11.99">
                                                             <path d="M13.2 5.999a.986.986 0 00-.254-.619L7.937.28a1.112 1.112 0 00-1.37-.075.91.91 0 00.01 1.313L10.099 5.1H.939a.9.9 0 100 1.8h9.16l-3.522 3.582a.961.961 0 00-.01 1.313 1.1 1.1 0 001.37-.075l5.009-5.1a.847.847 0 00.254-.619z"/>
                                                         </svg>
@@ -586,7 +592,8 @@ class Tabbed_USP_Widget extends Widget_Base {
                                             </div>
                                         </div>
                                     <?php 
-                                    endforeach;
+                                        endif;
+                                    }
                                     ?>
                                 </div>
                             </div>
