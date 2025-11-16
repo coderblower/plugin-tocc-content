@@ -120,6 +120,22 @@ class Tabbed_USP_Widget extends Widget_Base {
             ]
         );
 
+        $repeater->add_control(
+            'content_items_divider',
+            [
+                'type' => Controls_Manager::DIVIDER,
+                'style' => 'thick',
+            ]
+        );
+
+        $repeater->add_control(
+            'cards_heading',
+            [
+                'label' => 'Cards for this Tab',
+                'type' => Controls_Manager::HEADING,
+            ]
+        );
+
         // Content Items Repeater (Nested inside tabs)
         $content_repeater = new Repeater();
 
@@ -185,6 +201,7 @@ class Tabbed_USP_Widget extends Widget_Base {
                     ],
                 ],
                 'title_field' => '{{{ item_title }}}',
+                'prevent_empty' => false,
             ]
         );
 

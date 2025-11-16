@@ -15,6 +15,22 @@
 if (!defined('ABSPATH')) exit;
 
 /**
+ * Enqueue Elementor Editor Scripts
+ */
+function tabbed_usp_enqueue_editor_scripts() {
+    if (defined('ELEMENTOR_PLUGIN_BASE')) {
+        wp_enqueue_script(
+            'tabbed-usp-elementor-fix',
+            plugin_dir_url(__FILE__) . 'assets/elementor-fix.js',
+            ['jquery', 'elementor-editor'],
+            '1.0.0',
+            true
+        );
+    }
+}
+add_action('elementor/editor/after_enqueue_scripts', 'tabbed_usp_enqueue_editor_scripts');
+
+/**
  * Check if Elementor is installed and activated
  */
 function tabbed_usp_check_elementor() {
