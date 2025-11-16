@@ -1,6 +1,6 @@
 <?php
 /**
- * Tabbed USP Widget Class - Fixed Version
+ * Tabbed USP Widget Class - Dynamic Dropdown Version
  * Save as: /widgets/tabbed-usp-widget-class.php
  */
 
@@ -90,26 +90,15 @@ class Tabbed_USP_Widget extends Widget_Base {
             'tabs_notice',
             [
                 'type' => Controls_Manager::RAW_HTML,
-                'raw' => '<div style="padding: 10px; background: #fff3cd; border-left: 3px solid #ffc107; margin-bottom: 15px;">
-                    <strong>⚠️ Important:</strong><br>
-                    Give each tab a unique ID (e.g., connect, champion, support).<br>
-                    You\'ll use these IDs to assign cards to tabs in the next section.
+                'raw' => '<div style="padding: 10px; background: #e3f2fd; border-left: 3px solid #2196F3; margin-bottom: 15px;">
+                    <strong>ℹ️ Auto ID Generation:</strong><br>
+                    Tab IDs are automatically generated from tab titles.<br>
+                    You can see them in the Cards section dropdown.
                 </div>',
             ]
         );
 
         $repeater = new Repeater();
-
-        $repeater->add_control(
-            'tab_id',
-            [
-                'label' => 'Tab ID (unique)',
-                'type' => Controls_Manager::TEXT,
-                'default' => '',
-                'description' => 'Enter a unique ID (e.g., connect, champion, support). Use lowercase, no spaces.',
-                'label_block' => true,
-            ]
-        );
 
         $repeater->add_control(
             'tab_icon',
@@ -143,6 +132,16 @@ class Tabbed_USP_Widget extends Widget_Base {
             ]
         );
 
+        // Hidden field to store auto-generated ID
+        $repeater->add_control(
+            'tab_id',
+            [
+                'label' => 'Tab ID (Auto-generated)',
+                'type' => Controls_Manager::HIDDEN,
+                'default' => '',
+            ]
+        );
+
         $this->add_control(
             'tabs',
             [
@@ -151,22 +150,22 @@ class Tabbed_USP_Widget extends Widget_Base {
                 'fields' => $repeater->get_controls(),
                 'default' => [
                     [
-                        'tab_id' => 'connect',
                         'tab_title' => 'Connect',
                         'tab_summary' => 'Join a community that connects you to opportunities.',
+                        'tab_id' => 'connect',
                     ],
                     [
-                        'tab_id' => 'champion',
                         'tab_title' => 'Champion',
                         'tab_summary' => 'Advocating for the London community where it matters.',
+                        'tab_id' => 'champion',
                     ],
                     [
-                        'tab_id' => 'support',
                         'tab_title' => 'Support',
                         'tab_summary' => 'Support for you and the London economy.',
+                        'tab_id' => 'support',
                     ],
                 ],
-                'title_field' => '{{{ tab_title }}} (ID: {{{ tab_id }}})',
+                'title_field' => '{{{ tab_title }}}',
             ]
         );
 
@@ -187,25 +186,38 @@ class Tabbed_USP_Widget extends Widget_Base {
                 'type' => Controls_Manager::RAW_HTML,
                 'raw' => '<div style="padding: 10px; background: #e8f5e9; border-left: 3px solid #4caf50; margin-bottom: 15px;">
                     <strong>💡 How to use:</strong><br>
-                    1. Create your tabs above first<br>
-                    2. Note each tab\'s ID<br>
-                    3. Create cards below and assign them to tabs using the dropdown<br>
-                    4. <strong>After adding tabs, refresh the page</strong> to see them in the dropdown
+                    1. Create your tabs in the "Tabs" section above<br>
+                    2. Come here and create cards<br>
+                    3. Use the dropdown to assign each card to a tab<br>
+                    4. The dropdown automatically shows all your tabs!
+                </div>',
+            ]
+        );
+
+        $this->add_control(
+            'refresh_dropdown_button',
+            [
+                'type' => Controls_Manager::RAW_HTML,
+                'raw' => '<div style="margin: 10px 0;">
+                    <button type="button" class="elementor-button" onclick="elementor.reloadPreview(); return false;" style="background: #93003c; color: white;">
+                        <i class="eicon-reload"></i> Refresh Dropdown
+                    </button>
+                    <p style="font-size: 12px; color: #666; margin-top: 5px;">Click after adding/editing tabs to update the dropdown</p>
                 </div>',
             ]
         );
 
         $cards_repeater = new Repeater();
 
+        // Dynamic dropdown based on tabs
         $cards_repeater->add_control(
             'assign_to_tab',
             [
                 'label' => 'Assign to Tab',
-                'type' => Controls_Manager::TEXT,
+                'type' => Controls_Manager::SELECT,
+                'options' => ['' => 'Select Tab'], // ✅ Static default options
                 'default' => '',
-                'description' => 'Enter the Tab ID (e.g., connect, champion, support)',
                 'label_block' => true,
-                'placeholder' => 'Enter tab ID here'
             ]
         );
 
@@ -285,7 +297,7 @@ class Tabbed_USP_Widget extends Widget_Base {
                         'card_link_text' => 'Membership Overview',
                     ],
                 ],
-                'title_field' => '{{{ card_title }}} → {{{ assign_to_tab }}}',
+                'title_field' => '{{{ card_title }}}',
             ]
         );
 
@@ -328,6 +340,63 @@ class Tabbed_USP_Widget extends Widget_Base {
         );
 
         $this->end_controls_section();
+    }
+
+
+     public function on_import( $element ) {  // ← Add here
+        return $element;
+    }
+
+    /**
+     * Generate slug from tab title
+     */
+    protected function generate_tab_id($title, $index) {
+        if (empty($title)) {
+            return 'tab-' . $index;
+        }
+        
+        // Convert to lowercase
+        $slug = strtolower($title);
+        
+        // Replace spaces and special chars with hyphens
+        $slug = preg_replace('/[^a-z0-9]+/', '-', $slug);
+        
+        // Remove leading/trailing hyphens
+        $slug = trim($slug, '-');
+        
+        // If empty after cleaning, use index
+        if (empty($slug)) {
+            return 'tab-' . $index;
+        }
+        
+        return $slug;
+    }
+
+    /**
+     * Get tabs for dropdown - dynamically from current widget settings
+     */
+    protected function get_tabs_for_dropdown() {
+        $options = ['' => '-- Select Tab --'];
+        
+        // Try to get current settings
+        $settings = $this->get_settings_for_display();
+        
+        if (!empty($settings['tabs']) && is_array($settings['tabs'])) {
+            foreach ($settings['tabs'] as $index => $tab) {
+                if (!empty($tab['tab_title'])) {
+                    // Generate ID from title
+                    $tab_id = $this->generate_tab_id($tab['tab_title'], $index);
+                    $options[$tab_id] = $tab['tab_title'];
+                }
+            }
+        }
+        
+        // If no tabs yet, show helpful message
+        if (count($options) === 1) {
+            $options[''] = 'Create tabs first, then refresh';
+        }
+        
+        return $options;
     }
 
     /**
@@ -618,7 +687,8 @@ class Tabbed_USP_Widget extends Widget_Base {
                     <div class="tusp-tabs-wrapper">
                         <div class="tusp-tab-list">
                             <?php foreach ($tabs as $index => $tab) : 
-                                $tab_id = !empty($tab['tab_id']) ? $tab['tab_id'] : 'tab-' . $index;
+                                // Generate ID from title
+                                $tab_id = $this->generate_tab_id($tab['tab_title'], $index);
                             ?>
                                 <button class="tusp-tab-button <?php echo $index === 0 ? 'active' : ''; ?>" 
                                         data-tab="<?php echo esc_attr($tab_id); ?>">
@@ -639,7 +709,7 @@ class Tabbed_USP_Widget extends Widget_Base {
 
                         <div class="tusp-content-area">
                             <?php foreach ($tabs as $index => $tab) : 
-                                $tab_id = !empty($tab['tab_id']) ? $tab['tab_id'] : 'tab-' . $index;
+                                $tab_id = $this->generate_tab_id($tab['tab_title'], $index);
                                 $tab_cards = $this->get_cards_by_tab($tab_id, $cards);
                             ?>
                                 <div class="tusp-content-panel <?php echo $index === 0 ? 'active' : ''; ?>" 
@@ -647,7 +717,7 @@ class Tabbed_USP_Widget extends Widget_Base {
                                     <?php if (empty($tab_cards)) : ?>
                                         <div class="tusp-empty-state">
                                             <i class="eicon-info-circle"></i>
-                                            <p>No cards assigned to this tab yet.<br>Go to "Cards / Content Items" section and assign cards to <strong><?php echo esc_html($tab['tab_title']); ?></strong> (ID: <?php echo esc_html($tab_id); ?>).</p>
+                                            <p>No cards assigned to this tab yet.<br>Go to "Cards / Content Items" section and assign cards to <strong><?php echo esc_html($tab['tab_title']); ?></strong>.</p>
                                         </div>
                                     <?php else : ?>
                                         <div class="tusp-items-grid">
