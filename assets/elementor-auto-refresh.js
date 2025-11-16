@@ -24,31 +24,25 @@ jQuery(document).ready(function($) {
 /**
  * Get all current tabs with their IDs
  */
+ */
 function getCurrentTabs() {
     const tabs = [];
     
-    // Try multiple selectors to find tabs
-    const $tabRows = $('.elementor-control[data-control-name="tabs"] .elementor-repeater-row');
+    // Wait a bit for Elementor to fully render
+    const $tabsRepeater = $('.elementor-control-tabs .elementor-repeater-fields');
     
-    console.log('Found tab rows:', $tabRows.length);
+    console.log('Looking for tabs in repeater fields...');
     
-    $tabRows.each(function(index) {
-        const $row = $(this);
+    $tabsRepeater.each(function(index) {
+        const $field = $(this);
         
-        // Try different ways to get the title input
-        let title = $row.find('input[data-setting="tab_title"]').val();
-        
-        if (!title) {
-            title = $row.find('.elementor-control-tab_title input').val();
-        }
-        
-        if (!title) {
-            title = $row.find('[data-control-name="tab_title"] input').val();
-        }
+        // Find the title input within this repeater field
+        const $titleInput = $field.find('input[data-setting="tab_title"]');
+        const title = $titleInput.val();
         
         console.log('Tab ' + index + ' title:', title);
         
-        if (title) {
+        if (title && title.trim() !== '') {
             const id = generateTabId(title, index);
             tabs.push({ id: id, title: title });
         }
@@ -58,6 +52,7 @@ function getCurrentTabs() {
     
     return tabs;
 }
+
 
    /**
  * Update all card dropdowns with current tabs
@@ -115,27 +110,31 @@ function updateCardDropdowns() {
     /**
      * Watch for tab changes
      */
-    function watchTabChanges() {
-        // Monitor tab title changes
-        $(document).on('input change', '.elementor-control[data-control-name="tabs"] [data-setting="tab_title"]', function() {
-            setTimeout(updateCardDropdowns, 300);
-        });
+function watchTabChanges() {
+    // Monitor tab title changes
+    $(document).on('input keyup change', 'input[data-setting="tab_title"]', function() {
+        console.log('Tab title changed, updating dropdowns...');
+        setTimeout(updateCardDropdowns, 500);
+    });
 
-        // Monitor tab add/remove
-        $(document).on('click', '.elementor-control[data-control-name="tabs"] .elementor-repeater-add', function() {
-            setTimeout(updateCardDropdowns, 800);
-        });
+    // Monitor tab add
+    $(document).on('click', '.elementor-control-tabs .elementor-repeater-add', function() {
+        console.log('Tab added, updating dropdowns...');
+        setTimeout(updateCardDropdowns, 1000);
+    });
 
-        $(document).on('click', '.elementor-control[data-control-name="tabs"] .elementor-repeater-remove', function() {
-            setTimeout(updateCardDropdowns, 500);
-        });
+    // Monitor tab remove
+    $(document).on('click', '.elementor-control-tabs .elementor-repeater-tool-remove', function() {
+        console.log('Tab removed, updating dropdowns...');
+        setTimeout(updateCardDropdowns, 500);
+    });
 
-        // Monitor when new card is added
-        $(document).on('click', '.elementor-control[data-control-name="cards"] .elementor-repeater-add', function() {
-            setTimeout(updateCardDropdowns, 800);
-        });
-    }
-
+    // Monitor when cards section is opened
+    $(document).on('click', '.elementor-control-cards_section', function() {
+        console.log('Cards section opened, updating dropdowns...');
+        setTimeout(updateCardDropdowns, 300);
+    });
+}
     /**
      * Initialize on Elementor panel load
      */
@@ -171,10 +170,12 @@ function updateCardDropdowns() {
     }
 
     // Initialize
-    setTimeout(function() {
-        updateCardDropdowns();
-        watchTabChanges();
-    }, 1000);
+  // Initialize - WAIT LONGER
+setTimeout(function() {
+    console.log('Initial load - updating dropdowns...');
+    updateCardDropdowns();
+    watchTabChanges();
+}, 20000); // Increased from 1000 to 2000ms
 
     console.log('✅ Auto-refresh system initialized');
     console.log('📌 Dropdowns will update automatically when tabs change');
