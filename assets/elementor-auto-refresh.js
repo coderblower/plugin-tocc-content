@@ -21,22 +21,43 @@ jQuery(document).ready(function($) {
     /**
      * Get all current tabs with their IDs
      */
-    function getCurrentTabs() {
-        const tabs = [];
-        const tabsControl = $('.elementor-control[data-control-name="tabs"]');
+/**
+ * Get all current tabs with their IDs
+ */
+function getCurrentTabs() {
+    const tabs = [];
+    
+    // Try multiple selectors to find tabs
+    const $tabRows = $('.elementor-control[data-control-name="tabs"] .elementor-repeater-row');
+    
+    console.log('Found tab rows:', $tabRows.length);
+    
+    $tabRows.each(function(index) {
+        const $row = $(this);
         
-        if (!tabsControl.length) return tabs;
-
-        tabsControl.find('.elementor-repeater-row').each(function(index) {
-            const title = $(this).find('[data-setting="tab_title"]').val();
-            if (title) {
-                const id = generateTabId(title, index);
-                tabs.push({ id: id, title: title });
-            }
-        });
-
-        return tabs;
-    }
+        // Try different ways to get the title input
+        let title = $row.find('input[data-setting="tab_title"]').val();
+        
+        if (!title) {
+            title = $row.find('.elementor-control-tab_title input').val();
+        }
+        
+        if (!title) {
+            title = $row.find('[data-control-name="tab_title"] input').val();
+        }
+        
+        console.log('Tab ' + index + ' title:', title);
+        
+        if (title) {
+            const id = generateTabId(title, index);
+            tabs.push({ id: id, title: title });
+        }
+    });
+    
+    console.log('Total tabs found:', tabs.length);
+    
+    return tabs;
+}
 
    /**
  * Update all card dropdowns with current tabs
