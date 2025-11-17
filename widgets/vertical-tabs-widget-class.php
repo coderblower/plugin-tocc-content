@@ -33,7 +33,7 @@ class Vertical_Tabs_Widget extends Widget_Base {
     }
 
     public function get_keywords() {
-        return ['tabs', 'vertical', 'sidebar', 'accordion', 'content', 'tabbed', 'navigation', 'menu'];
+        return ['tabs', 'vertical', 'sidebar', 'accordion', 'content', 'tabbed', 'navigation', 'menu', 'usp'];
     }
 
     protected function register_controls() {
