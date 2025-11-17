@@ -1,6 +1,6 @@
 <?php
 /**
- * Tabbed USP Widget Class - Fixed Version
+ * Enhanced Tabbed USP Widget Class
  * Save as: /widgets/tabbed-usp-widget-class.php
  */
 
@@ -9,6 +9,8 @@ namespace ElementorTabbedUSP;
 use Elementor\Widget_Base;
 use Elementor\Controls_Manager;
 use Elementor\Repeater;
+use Elementor\Group_Control_Typography;
+use Elementor\Core\Kits\Documents\Tabs\Global_Typography;
 
 if (!defined('ABSPATH')) exit;
 
@@ -172,7 +174,7 @@ class Tabbed_USP_Widget extends Widget_Base {
 
         $this->end_controls_section();
 
-        // Cards Section (Separate from Tabs)
+        // Cards Section
         $this->start_controls_section(
             'cards_section',
             [
@@ -291,11 +293,128 @@ class Tabbed_USP_Widget extends Widget_Base {
 
         $this->end_controls_section();
 
+        // Layout Settings Section
+        $this->start_controls_section(
+            'layout_section',
+            [
+                'label' => 'Layout Settings',
+                'tab' => Controls_Manager::TAB_CONTENT,
+            ]
+        );
+
+        $this->add_control(
+            'cards_per_row',
+            [
+                'label' => 'Cards Per Row',
+                'type' => Controls_Manager::SELECT,
+                'default' => '3',
+                'options' => [
+                    '1' => '1 Column',
+                    '2' => '2 Columns',
+                    '3' => '3 Columns',
+                    '4' => '4 Columns',
+                ],
+                'description' => 'Number of cards to display per row',
+            ]
+        );
+
+        $this->add_control(
+            'cards_alignment',
+            [
+                'label' => 'Cards Alignment',
+                'type' => Controls_Manager::CHOOSE,
+                'options' => [
+                    'flex-start' => [
+                        'title' => 'Start',
+                        'icon' => 'eicon-text-align-left',
+                    ],
+                    'center' => [
+                        'title' => 'Center',
+                        'icon' => 'eicon-text-align-center',
+                    ],
+                    'flex-end' => [
+                        'title' => 'End',
+                        'icon' => 'eicon-text-align-right',
+                    ],
+                ],
+                'default' => 'flex-start',
+                'description' => 'Horizontal alignment of cards',
+            ]
+        );
+
+        $this->add_control(
+            'single_card_width',
+            [
+                'label' => 'Single Card Width',
+                'type' => Controls_Manager::SELECT,
+                'default' => 'auto',
+                'options' => [
+                    'auto' => 'Auto (Content Width)',
+                    'full' => 'Full Width',
+                    'custom' => 'Custom Width',
+                ],
+                'condition' => [
+                    'cards_per_row' => '1',
+                ],
+            ]
+        );
+
+        $this->add_responsive_control(
+            'single_card_custom_width',
+            [
+                'label' => 'Custom Width',
+                'type' => Controls_Manager::SLIDER,
+                'size_units' => ['px', '%', 'vw'],
+                'range' => [
+                    'px' => [
+                        'min' => 200,
+                        'max' => 1200,
+                        'step' => 10,
+                    ],
+                    '%' => [
+                        'min' => 10,
+                        'max' => 100,
+                        'step' => 1,
+                    ],
+                ],
+                'default' => [
+                    'unit' => '%',
+                    'size' => 50,
+                ],
+                'condition' => [
+                    'cards_per_row' => '1',
+                    'single_card_width' => 'custom',
+                ],
+            ]
+        );
+
+        $this->add_responsive_control(
+            'cards_gap',
+            [
+                'label' => 'Cards Gap',
+                'type' => Controls_Manager::SLIDER,
+                'size_units' => ['px'],
+                'range' => [
+                    'px' => [
+                        'min' => 0,
+                        'max' => 100,
+                        'step' => 5,
+                    ],
+                ],
+                'default' => [
+                    'unit' => 'px',
+                    'size' => 30,
+                ],
+            ]
+        );
+
+        $this->end_controls_section();
+
         // Style Section
         $this->start_controls_section(
             'style_section',
             [
-                'label' => 'Style',
+                'label' => 'Colors',
                 'tab' => Controls_Manager::TAB_STYLE,
             ]
         );
@@ -327,12 +446,19 @@ class Tabbed_USP_Widget extends Widget_Base {
             ]
         );
 
+        $this->add_control(
+            'tab_content_bg',
+            [
+                'label' => 'Tab & Content Background',
+                'type' => Controls_Manager::COLOR,
+                'default' => '#ffffff',
+                'description' => 'Background color for both tabs and content area',
+            ]
+        );
+
         $this->end_controls_section();
     }
 
-    /**
-     * Group cards by their assigned tab
-     */
     protected function get_cards_by_tab($tab_id, $cards) {
         if (empty($cards) || !is_array($cards)) {
             return [];
@@ -353,9 +479,16 @@ class Tabbed_USP_Widget extends Widget_Base {
         $settings = $this->get_settings_for_display();
         $widget_id = 'tusp-' . $this->get_id();
         
-        // Ensure cards array exists
         $cards = isset($settings['cards']) && is_array($settings['cards']) ? $settings['cards'] : [];
         $tabs = isset($settings['tabs']) && is_array($settings['tabs']) ? $settings['tabs'] : [];
+        
+        // Get layout settings
+        $cards_per_row = $settings['cards_per_row'];
+        $cards_alignment = $settings['cards_alignment'];
+        $single_card_width = isset($settings['single_card_width']) ? $settings['single_card_width'] : 'auto';
+        $custom_width = isset($settings['single_card_custom_width']) ? $settings['single_card_custom_width'] : ['unit' => '%', 'size' => 50];
+        $cards_gap = isset($settings['cards_gap']) ? $settings['cards_gap'] : ['unit' => 'px', 'size' => 30];
+        $tab_content_bg = $settings['tab_content_bg'];
         
         ?>
         <div class="tabbed-usp-widget" id="<?php echo esc_attr($widget_id); ?>">
@@ -402,16 +535,20 @@ class Tabbed_USP_Widget extends Widget_Base {
                 #<?php echo esc_attr($widget_id); ?> .tusp-tabs-wrapper {
                     display: grid;
                     grid-template-columns: 300px 1fr;
-                    gap: 30px;
+                    gap: 0;
                     margin-top: 30px;
+                    background: <?php echo esc_attr($tab_content_bg); ?>;
+                    border-radius: 8px;
+                    overflow: hidden;
                 }
                 #<?php echo esc_attr($widget_id); ?> .tusp-tab-list {
                     display: flex;
                     flex-direction: column;
                     gap: 0;
+                    background: <?php echo esc_attr($tab_content_bg); ?>;
                 }
                 #<?php echo esc_attr($widget_id); ?> .tusp-tab-button {
-                    background: white;
+                    background: transparent;
                     border: none;
                     padding: 24px 20px;
                     text-align: left;
@@ -423,11 +560,11 @@ class Tabbed_USP_Widget extends Widget_Base {
                     gap: 15px;
                 }
                 #<?php echo esc_attr($widget_id); ?> .tusp-tab-button:hover {
-                    background: #fafafa;
+                    background: rgba(0,0,0,0.03);
                 }
                 #<?php echo esc_attr($widget_id); ?> .tusp-tab-button.active {
                     border-left-color: <?php echo esc_attr($settings['primary_color']); ?>;
-                    background: white;
+                    background: transparent;
                 }
                 #<?php echo esc_attr($widget_id); ?> .tusp-tab-icon {
                     width: 40px;
@@ -455,8 +592,7 @@ class Tabbed_USP_Widget extends Widget_Base {
                     line-height: 1.5;
                 }
                 #<?php echo esc_attr($widget_id); ?> .tusp-content-area {
-                    background: white;
-                    border-radius: 8px;
+                    background: <?php echo esc_attr($tab_content_bg); ?>;
                     padding: 40px;
                     min-height: 400px;
                 }
@@ -483,14 +619,29 @@ class Tabbed_USP_Widget extends Widget_Base {
                 }
                 #<?php echo esc_attr($widget_id); ?> .tusp-items-grid {
                     display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                    gap: 30px;
+                    grid-template-columns: repeat(<?php echo esc_attr($cards_per_row); ?>, 1fr);
+                    gap: <?php echo esc_attr($cards_gap['size'] . $cards_gap['unit']); ?>;
+                    justify-items: <?php echo esc_attr($cards_alignment); ?>;
                 }
+                
+                <?php if ($cards_per_row === '1') : ?>
+                    #<?php echo esc_attr($widget_id); ?> .tusp-items-grid {
+                        <?php if ($single_card_width === 'full') : ?>
+                            justify-items: stretch;
+                        <?php elseif ($single_card_width === 'custom') : ?>
+                            grid-template-columns: <?php echo esc_attr($custom_width['size'] . $custom_width['unit']); ?>;
+                        <?php else : ?>
+                            grid-template-columns: auto;
+                        <?php endif; ?>
+                    }
+                <?php endif; ?>
+                
                 #<?php echo esc_attr($widget_id); ?> .tusp-item {
                     display: flex;
                     flex-direction: row;
                     align-items: flex-start;
                     gap: 20px;
+                    width: 100%;
                 }
                 #<?php echo esc_attr($widget_id); ?> .tusp-item-icon-wrapper {
                     width: 80px;
@@ -568,6 +719,9 @@ class Tabbed_USP_Widget extends Widget_Base {
                         border-left-color: <?php echo esc_attr($settings['primary_color']); ?>;
                         border-bottom: none;
                     }
+                    #<?php echo esc_attr($widget_id); ?> .tusp-items-grid {
+                        grid-template-columns: repeat(<?php echo min(2, intval($cards_per_row)); ?>, 1fr);
+                    }
                 }
 
                 @media (max-width: 768px) {
@@ -590,6 +744,7 @@ class Tabbed_USP_Widget extends Widget_Base {
                     }
                     #<?php echo esc_attr($widget_id); ?> .tusp-items-grid {
                         grid-template-columns: 1fr;
+                        justify-items: center;
                     }
                     #<?php echo esc_attr($widget_id); ?> .tusp-main-title {
                         font-size: 24px;
