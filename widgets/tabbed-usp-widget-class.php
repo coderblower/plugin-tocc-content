@@ -391,7 +391,7 @@ class Tabbed_USP_Widget extends Widget_Base {
         $this->add_responsive_control(
             'cards_gap',
             [
-                'label' => 'Cards Gap',
+                'label' => 'Cards Gap (Column)',
                 'type' => Controls_Manager::SLIDER,
                 'size_units' => ['px'],
                 'range' => [
@@ -405,6 +405,49 @@ class Tabbed_USP_Widget extends Widget_Base {
                     'unit' => 'px',
                     'size' => 30,
                 ],
+                'description' => 'Horizontal gap between cards',
+            ]
+        );
+
+        $this->add_responsive_control(
+            'cards_row_gap',
+            [
+                'label' => 'Row Gap',
+                'type' => Controls_Manager::SLIDER,
+                'size_units' => ['px'],
+                'range' => [
+                    'px' => [
+                        'min' => 0,
+                        'max' => 100,
+                        'step' => 5,
+                    ],
+                ],
+                'default' => [
+                    'unit' => 'px',
+                    'size' => 30,
+                ],
+                'description' => 'Vertical gap between rows of cards',
+            ]
+        );
+
+        $this->add_control(
+            'tab_content_gap',
+            [
+                'label' => 'Tab to Content Gap',
+                'type' => Controls_Manager::SLIDER,
+                'size_units' => ['px'],
+                'range' => [
+                    'px' => [
+                        'min' => 0,
+                        'max' => 50,
+                        'step' => 1,
+                    ],
+                ],
+                'default' => [
+                    'unit' => 'px',
+                    'size' => 0,
+                ],
+                'description' => 'Gap between tab sidebar and content area',
             ]
         );
 
@@ -488,6 +531,8 @@ class Tabbed_USP_Widget extends Widget_Base {
         $single_card_width = isset($settings['single_card_width']) ? $settings['single_card_width'] : 'auto';
         $custom_width = isset($settings['single_card_custom_width']) ? $settings['single_card_custom_width'] : ['unit' => '%', 'size' => 50];
         $cards_gap = isset($settings['cards_gap']) ? $settings['cards_gap'] : ['unit' => 'px', 'size' => 30];
+        $cards_row_gap = isset($settings['cards_row_gap']) ? $settings['cards_row_gap'] : ['unit' => 'px', 'size' => 30];
+        $tab_content_gap = isset($settings['tab_content_gap']) ? $settings['tab_content_gap'] : ['unit' => 'px', 'size' => 0];
         $tab_content_bg = $settings['tab_content_bg'];
         
         ?>
@@ -535,18 +580,31 @@ class Tabbed_USP_Widget extends Widget_Base {
                 #<?php echo esc_attr($widget_id); ?> .tusp-tabs-wrapper {
                     display: grid;
                     grid-template-columns: 300px 1fr;
-                    gap: 0;
+                    gap: <?php echo esc_attr($tab_content_gap['size'] . $tab_content_gap['unit']); ?>;
                     margin-top: 30px;
-                    background: <?php echo esc_attr($tab_content_bg); ?>;
                     border-radius: 8px;
-                    overflow: hidden;
+                    overflow: visible;
                 }
                 #<?php echo esc_attr($widget_id); ?> .tusp-tab-list {
                     display: flex;
                     flex-direction: column;
                     gap: 0;
                     background: <?php echo esc_attr($tab_content_bg); ?>;
+                    border-radius: 8px 0 0 8px;
+                    position: relative;
                 }
+                <?php if ($tab_content_gap['size'] > 0) : ?>
+                #<?php echo esc_attr($widget_id); ?> .tusp-tab-button.active::after {
+                    content: '';
+                    position: absolute;
+                    right: -<?php echo esc_attr($tab_content_gap['size'] . $tab_content_gap['unit']); ?>;
+                    top: 0;
+                    bottom: 0;
+                    width: <?php echo esc_attr($tab_content_gap['size'] . $tab_content_gap['unit']); ?>;
+                    background: <?php echo esc_attr($tab_content_bg); ?>;
+                    z-index: 1;
+                }
+                <?php endif; ?>
                 #<?php echo esc_attr($widget_id); ?> .tusp-tab-button {
                     background: transparent;
                     border: none;
@@ -558,6 +616,7 @@ class Tabbed_USP_Widget extends Widget_Base {
                     display: flex;
                     align-items: flex-start;
                     gap: 15px;
+                    position: relative;
                 }
                 #<?php echo esc_attr($widget_id); ?> .tusp-tab-button:hover {
                     background: rgba(0,0,0,0.03);
@@ -595,6 +654,7 @@ class Tabbed_USP_Widget extends Widget_Base {
                     background: <?php echo esc_attr($tab_content_bg); ?>;
                     padding: 40px;
                     min-height: 400px;
+                    border-radius: 0 8px 8px 0;
                 }
                 #<?php echo esc_attr($widget_id); ?> .tusp-content-panel {
                     display: none;
@@ -620,7 +680,7 @@ class Tabbed_USP_Widget extends Widget_Base {
                 #<?php echo esc_attr($widget_id); ?> .tusp-items-grid {
                     display: grid;
                     grid-template-columns: repeat(<?php echo esc_attr($cards_per_row); ?>, 1fr);
-                    gap: <?php echo esc_attr($cards_gap['size'] . $cards_gap['unit']); ?>;
+                    gap: <?php echo esc_attr($cards_row_gap['size'] . $cards_row_gap['unit']); ?> <?php echo esc_attr($cards_gap['size'] . $cards_gap['unit']); ?>;
                     justify-items: <?php echo esc_attr($cards_alignment); ?>;
                 }
                 
@@ -629,6 +689,7 @@ class Tabbed_USP_Widget extends Widget_Base {
                         <?php if ($single_card_width === 'full') : ?>
                             grid-template-columns: 1fr;
                             justify-items: stretch;
+                            justify-content: <?php echo esc_attr($cards_alignment); ?>;
                         <?php elseif ($single_card_width === 'custom') : ?>
                             grid-template-columns: <?php echo esc_attr($custom_width['size'] . $custom_width['unit']); ?>;
                             justify-content: <?php echo esc_attr($cards_alignment); ?>;
@@ -709,11 +770,23 @@ class Tabbed_USP_Widget extends Widget_Base {
                 @media (max-width: 1024px) {
                     #<?php echo esc_attr($widget_id); ?> .tusp-tabs-wrapper {
                         grid-template-columns: 1fr;
+                        gap: <?php echo esc_attr($tab_content_gap['size'] . $tab_content_gap['unit']); ?>;
                     }
                     #<?php echo esc_attr($widget_id); ?> .tusp-tab-list {
                         flex-direction: column;
                         gap: 0;
+                        border-radius: 8px 8px 0 0;
                     }
+                    <?php if ($tab_content_gap['size'] > 0) : ?>
+                    #<?php echo esc_attr($widget_id); ?> .tusp-tab-button.active::after {
+                        right: 0;
+                        top: auto;
+                        bottom: -<?php echo esc_attr($tab_content_gap['size'] . $tab_content_gap['unit']); ?>;
+                        left: 0;
+                        width: auto;
+                        height: <?php echo esc_attr($tab_content_gap['size'] . $tab_content_gap['unit']); ?>;
+                    }
+                    <?php endif; ?>
                     #<?php echo esc_attr($widget_id); ?> .tusp-tab-button {
                         border-left: 4px solid transparent;
                         border-bottom: none;
@@ -722,6 +795,9 @@ class Tabbed_USP_Widget extends Widget_Base {
                     #<?php echo esc_attr($widget_id); ?> .tusp-tab-button.active {
                         border-left-color: <?php echo esc_attr($settings['primary_color']); ?>;
                         border-bottom: none;
+                    }
+                    #<?php echo esc_attr($widget_id); ?> .tusp-content-area {
+                        border-radius: 0 0 8px 8px;
                     }
                     #<?php echo esc_attr($widget_id); ?> .tusp-items-grid {
                         grid-template-columns: repeat(<?php echo min(2, intval($cards_per_row)); ?>, 1fr);
