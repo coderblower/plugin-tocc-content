@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Tabbed USP Widget for Elementor
- * Description: A custom Elementor widget to display tabbed Unique Selling Propositions (USPs) with icons, titles, summaries, and detailed content items.
- * Version: 2.0.0
+ * Description: Custom Elementor widgets including Tabbed USP and Vertical Tabs with icons, titles, summaries, and detailed content items.
+ * Version: 2.1.0
  * Author: Your Name
  * Text Domain: tabbed-usp-widget
  */ 
@@ -18,7 +18,7 @@ function tabbed_usp_enqueue_editor_scripts() {
             'tabbed-usp-auto-refresh',
             plugin_dir_url(__FILE__) . 'assets/elementor-auto-refresh.js',
             ['jquery', 'elementor-editor'],
-            '2.0.0',
+            '2.1.0',
             true
         );
     }
@@ -43,10 +43,29 @@ function tabbed_usp_missing_elementor() {
 }
 
 /**
- * Register Widget
+ * Register Widgets
  */
-function register_tabbed_usp_widget($widgets_manager) {
+function register_tabbed_usp_widgets($widgets_manager) {
+    // Register Tabbed USP Widget
     require_once(__DIR__ . '/widgets/tabbed-usp-widget-class.php');
     $widgets_manager->register(new \ElementorTabbedUSP\Tabbed_USP_Widget());
+    
+    // Register Vertical Tabs Widget
+    require_once(__DIR__ . '/widgets/vertical-tabs-widget-class.php');
+    $widgets_manager->register(new \ElementorVerticalTabs\Vertical_Tabs_Widget());
 }
-add_action('elementor/widgets/register', 'register_tabbed_usp_widget');
+add_action('elementor/widgets/register', 'register_tabbed_usp_widgets');
+
+/**
+ * Add Custom Widget Categories
+ */
+function add_tabbed_usp_widget_categories($elements_manager) {
+    $elements_manager->add_category(
+        'tabbed-widgets',
+        [
+            'title' => __('Tabbed Widgets', 'tabbed-usp-widget'),
+            'icon' => 'fa fa-plug',
+        ]
+    );
+}
+add_action('elementor/elements/categories_registered', 'add_tabbed_usp_widget_categories');
