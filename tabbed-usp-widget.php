@@ -71,5 +71,8 @@ function register_tabbed_usp_widgets($widgets_manager) {
     // Register Stats Section Widget
     require_once(__DIR__ . '/widgets/stats-section-widget-class.php');
     $widgets_manager->register(new \ElementorStatsSection\Stats_Section_Widget());
+
+    require_once(__DIR__ . '/widgets/split-screen-slider-widget-class.php');
+    $widgets_manager->register(new \ElementorSplitScreenSlider\Split_Screen_Slider_Widget());
 }
 add_action('elementor/widgets/register', 'register_tabbed_usp_widgets');
