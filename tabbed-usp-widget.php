@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Tabbed USP Widget for Elementor
- * Description: Custom Elementor widgets including Tabbed USP and Vertical Tabs with icons, titles, summaries, and detailed content items.
- * Version: 2.1.0
+ * Description: Custom Elementor widgets including Tabbed USP, Vertical Tabs, and Stats Section with icons, titles, summaries, and detailed content items.
+ * Version: 2.2.0
  * Author: Your Name
  * Text Domain: tabbed-usp-widget
  */ 
@@ -67,5 +67,9 @@ function register_tabbed_usp_widgets($widgets_manager) {
     // Register Vertical Tabs Widget
     require_once(__DIR__ . '/widgets/vertical-tabs-widget-class.php');
     $widgets_manager->register(new \ElementorVerticalTabs\Vertical_Tabs_Widget());
+
+    // Register Stats Section Widget
+    require_once(__DIR__ . '/widgets/stats-section-widget-class.php');
+    $widgets_manager->register(new \ElementorStatsSection\Stats_Section_Widget());
 }
 add_action('elementor/widgets/register', 'register_tabbed_usp_widgets');
