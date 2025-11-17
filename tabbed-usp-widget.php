@@ -43,6 +43,20 @@ function tabbed_usp_missing_elementor() {
 }
 
 /**
+ * Add Custom Widget Categories (must run before widgets are registered)
+ */
+function add_tabbed_usp_widget_categories($elements_manager) {
+    $elements_manager->add_category(
+        'tabbed-widgets',
+        [
+            'title' => __('Tabbed Widgets', 'tabbed-usp-widget'),
+            'icon' => 'fa fa-plug',
+        ]
+    );
+}
+add_action('elementor/elements/categories_registered', 'add_tabbed_usp_widget_categories');
+
+/**
  * Register Widgets
  */
 function register_tabbed_usp_widgets($widgets_manager) {
@@ -55,17 +69,3 @@ function register_tabbed_usp_widgets($widgets_manager) {
     $widgets_manager->register(new \ElementorVerticalTabs\Vertical_Tabs_Widget());
 }
 add_action('elementor/widgets/register', 'register_tabbed_usp_widgets');
-
-/**
- * Add Custom Widget Categories
- */
-function add_tabbed_usp_widget_categories($elements_manager) {
-    $elements_manager->add_category(
-        'tabbed-widgets',
-        [
-            'title' => __('Tabbed Widgets', 'tabbed-usp-widget'),
-            'icon' => 'fa fa-plug',
-        ]
-    );
-}
-add_action('elementor/elements/categories_registered', 'add_tabbed_usp_widget_categories');

@@ -29,7 +29,7 @@ class Vertical_Tabs_Widget extends Widget_Base {
     }
 
     public function get_categories() {
-        return ['general'];
+        return ['tabbed-widgets', 'general'];
     }
 
     public function get_keywords() {
