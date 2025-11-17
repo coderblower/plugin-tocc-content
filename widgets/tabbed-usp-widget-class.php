@@ -627,11 +627,15 @@ class Tabbed_USP_Widget extends Widget_Base {
                 <?php if ($cards_per_row === '1') : ?>
                     #<?php echo esc_attr($widget_id); ?> .tusp-items-grid {
                         <?php if ($single_card_width === 'full') : ?>
+                            grid-template-columns: 1fr;
                             justify-items: stretch;
                         <?php elseif ($single_card_width === 'custom') : ?>
                             grid-template-columns: <?php echo esc_attr($custom_width['size'] . $custom_width['unit']); ?>;
+                            justify-content: <?php echo esc_attr($cards_alignment); ?>;
+                            justify-items: stretch;
                         <?php else : ?>
                             grid-template-columns: auto;
+                            justify-content: <?php echo esc_attr($cards_alignment); ?>;
                         <?php endif; ?>
                     }
                 <?php endif; ?>
