@@ -10,9 +10,10 @@
 if (!defined('ABSPATH')) exit;
 
 /**
- * Load Registration Handler
+ * Load Registration Handler and Stripe Settings
  */
 require_once(__DIR__ . '/includes/registration-handler.php');
+require_once(__DIR__ . '/includes/stripe-settings.php');
 require_once(__DIR__ . '/includes/admin-dashboard.php');
 
 /**

@@ -110,6 +110,31 @@ class Registration_Widget extends Widget_Base {
             ]
         );
 
+        $this->add_control(
+            'stripe_publishable_key',
+            [
+                'label' => 'Stripe Publishable Key',
+                'type' => Controls_Manager::TEXT,
+                'placeholder' => 'pk_test_...',
+                'description' => 'Your Stripe publishable key',
+                'label_block' => true,
+            ]
+        );
+
+        $this->add_control(
+            'login_redirect_url',
+            [
+                'label' => 'Login Redirect URL',
+                'type' => Controls_Manager::URL,
+                'placeholder' => '/login',
+                'description' => 'Where to redirect after successful payment',
+                'default' => [
+                    'url' => '/login',
+                ],
+                'label_block' => true,
+            ]
+        );
+
         $this->end_controls_section();
 
         $this->start_controls_section(
@@ -356,8 +381,13 @@ class Registration_Widget extends Widget_Base {
                     appearance: none;
                     background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23667085' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
                     background-repeat: no-repeat;
-                    background-position: right 16px center;
-                    padding-right: 40px;
+                    background-position: right 12px center;
+                    background-size: 12px 8px;
+                    padding-right: 36px;
+                    -webkit-appearance: none;
+                    -moz-appearance: none;
+                    appearance: none;
+                    cursor: pointer;
                 }
 
                 #<?php echo esc_attr($widget_id); ?> .cost-display {
@@ -871,6 +901,7 @@ class Registration_Widget extends Widget_Base {
             </div>
         </div>
 
+        <script src="https://js.stripe.com/v3/"></script>
         <script>
             let toccCurrentStep = 1;
             let toccFormData = {
@@ -894,8 +925,6 @@ class Registration_Widget extends Widget_Base {
                         step.classList.add('completed');
                     }
                 });
-
-                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
 
             function toccRegFormNext(event, currentStep) {
@@ -953,7 +982,94 @@ class Registration_Widget extends Widget_Base {
 
                 document.getElementById('tocc-overlay').classList.add('active');
 
-                // Send to server
+                if (paymentMethod === 'card') {
+                    // Handle Stripe payment
+                    toccProcessStripePayment();
+                } else {
+                    // Handle Direct Debit
+                    toccRegisterUser();
+                }
+            }
+
+            function toccProcessStripePayment() {
+                const stripe = Stripe('<?php echo esc_js($settings['stripe_publishable_key'] ?? ''); ?>');
+                
+                if (!stripe) {
+                    document.getElementById('tocc-overlay').classList.remove('active');
+                    alert('Stripe configuration error');
+                    return;
+                }
+
+                // Create payment intent via server
+                fetch('<?php echo esc_url(admin_url('admin-ajax.php')); ?>', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        action: 'tocc_create_payment_intent',
+                        nonce: '<?php echo wp_create_nonce('tocc_payment_nonce'); ?>',
+                        data: JSON.stringify(toccFormData),
+                        amount: 73200 // Amount in cents
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success || !data.client_secret) {
+                        throw new Error(data.message || 'Payment setup failed');
+                    }
+
+                    // Use Stripe Payment Element
+                    const elements = stripe.elements({
+                        clientSecret: data.client_secret
+                    });
+
+                    const paymentElement = elements.create('payment');
+                    
+                    // Show payment form in overlay
+                    const overlay = document.getElementById('tocc-overlay');
+                    const content = overlay.querySelector('.overlay-content');
+                    
+                    content.innerHTML = `
+                        <h3 class="overlay-title">Complete Payment</h3>
+                        <div id="payment-element-container"></div>
+                        <button type="button" class="btn btn-primary" id="submit-payment" style="margin-top: 20px; width: 100%;">
+                            PAY £732.00
+                        </button>
+                    `;
+
+                    paymentElement.mount('#payment-element-container');
+
+                    // Handle payment submission
+                    document.getElementById('submit-payment').addEventListener('click', async () => {
+                        const submitBtn = document.getElementById('submit-payment');
+                        submitBtn.disabled = true;
+                        submitBtn.textContent = 'Processing...';
+
+                        const { error } = await stripe.confirmPayment({
+                            elements,
+                            confirmParams: {
+                                return_url: window.location.href,
+                            },
+                        });
+
+                        if (error) {
+                            content.innerHTML = `
+                                <h3 class="overlay-title">Payment Failed</h3>
+                                <p class="overlay-text" style="color: #d32f2f;">${error.message}</p>
+                                <button type="button" class="btn btn-primary" onclick="location.reload()">Try Again</button>
+                            `;
+                        }
+                    });
+                })
+                .catch(error => {
+                    document.getElementById('tocc-overlay').classList.remove('active');
+                    alert('Error: ' + error.message);
+                });
+            }
+
+            function toccRegisterUser() {
+                // Send user registration to server
                 fetch('<?php echo esc_url(admin_url('admin-ajax.php')); ?>', {
                     method: 'POST',
                     headers: {
@@ -970,8 +1086,8 @@ class Registration_Widget extends Widget_Base {
                     document.getElementById('tocc-overlay').classList.remove('active');
                     
                     if (data.success) {
-                        alert('Registration successful! You can now login.');
-                        window.location.href = '<?php echo wp_login_url(); ?>';
+                        const redirectUrl = '<?php echo esc_js($settings['login_redirect_url']['url'] ?? wp_login_url()); ?>';
+                        window.location.href = redirectUrl;
                     } else {
                         alert('Error: ' + (data.message || 'Registration failed'));
                     }

@@ -15,6 +15,8 @@ class TOCC_Registration_Handler {
     public static function init() {
         add_action('wp_ajax_tocc_register_user', [self::class, 'handle_registration']);
         add_action('wp_ajax_nopriv_tocc_register_user', [self::class, 'handle_registration']);
+        add_action('wp_ajax_tocc_create_payment_intent', [self::class, 'create_payment_intent']);
+        add_action('wp_ajax_nopriv_tocc_create_payment_intent', [self::class, 'create_payment_intent']);
         
         // Create custom tables on plugin activation
         add_action('plugins_loaded', [self::class, 'create_tables']);
@@ -317,6 +319,161 @@ class TOCC_Registration_Handler {
         global $wpdb;
         
         return $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}tocc_members");
+    }
+
+    /**
+     * Get Stripe secret key from options
+     */
+    private static function get_stripe_secret_key() {
+        return get_option('tocc_stripe_secret_key', '');
+    }
+
+    /**
+     * Create Stripe Payment Intent
+     */
+    public static function create_payment_intent() {
+        // Verify nonce
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'tocc_payment_nonce')) {
+            wp_send_json_error(['message' => 'Security check failed']);
+        }
+
+        $stripe_secret = self::get_stripe_secret_key();
+        if (empty($stripe_secret)) {
+            wp_send_json_error(['message' => 'Stripe not configured']);
+        }
+
+        // Get amount and form data
+        $amount = isset($_POST['amount']) ? intval($_POST['amount']) : 73200; // Default £732.00
+        $data = isset($_POST['data']) ? json_decode(stripslashes($_POST['data']), true) : [];
+
+        if (!$data || empty($data['step1'])) {
+            wp_send_json_error(['message' => 'Invalid form data']);
+        }
+
+        try {
+            // Use Stripe PHP SDK via HTTP (simpler approach)
+            $curl = curl_init();
+            
+            $post_fields = [
+                'amount' => $amount,
+                'currency' => 'gbp',
+                'automatic_payment_methods[enabled]' => 'true',
+                'metadata[email]' => $data['step1']['email'] ?? '',
+                'metadata[company]' => $data['step2']['company_name'] ?? '',
+            ];
+
+            curl_setopt_array($curl, [
+                CURLOPT_URL => 'https://api.stripe.com/v1/payment_intents',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => http_build_query($post_fields),
+                CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
+                CURLOPT_USERPWD => $stripe_secret . ':',
+                CURLOPT_HTTPHEADER => [
+                    'Content-Type: application/x-www-form-urlencoded',
+                ],
+            ]);
+
+            $response = curl_exec($curl);
+            $http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            curl_close($curl);
+
+            if ($http_code !== 200) {
+                throw new Exception('Stripe API error: ' . $response);
+            }
+
+            $payment_intent = json_decode($response, true);
+
+            if (!isset($payment_intent['client_secret'])) {
+                throw new Exception('Failed to create payment intent');
+            }
+
+            // Store in transient for later verification
+            set_transient('tocc_payment_' . $payment_intent['id'], $data, HOUR_IN_SECONDS);
+
+            wp_send_json_success([
+                'client_secret' => $payment_intent['client_secret'],
+                'payment_intent_id' => $payment_intent['id'],
+            ]);
+
+        } catch (Exception $e) {
+            wp_send_json_error(['message' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Process Stripe payment confirmation (webhook)
+     */
+    public static function handle_stripe_webhook() {
+        if (!isset($_POST['type']) || $_POST['type'] !== 'payment_intent.succeeded') {
+            return;
+        }
+
+        $payment_intent_id = $_POST['data']['object']['id'] ?? '';
+        $data = get_transient('tocc_payment_' . $payment_intent_id);
+
+        if (!$data) {
+            return;
+        }
+
+        // Create user and update payment status
+        if (self::register_user_from_data($data)) {
+            $user_id = get_user_by('email', $data['step1']['email'])->ID;
+            self::update_payment_status($user_id, 'completed', $payment_intent_id);
+            delete_transient('tocc_payment_' . $payment_intent_id);
+        }
+    }
+
+    /**
+     * Register user from form data
+     */
+    private static function register_user_from_data($data) {
+        $step1 = $data['step1'] ?? [];
+        $step2 = $data['step2'] ?? [];
+        $step3 = $data['step3'] ?? [];
+
+        if (empty($step1['email']) || empty($step1['password'])) {
+            return false;
+        }
+
+        // Check if user exists
+        if (email_exists($step1['email'])) {
+            return false;
+        }
+
+        // Create user
+        $user_id = wp_create_user($step1['email'], $step1['password'], $step1['email']);
+        
+        if (is_wp_error($user_id)) {
+            return false;
+        }
+
+        // Update user profile
+        wp_update_user([
+            'ID' => $user_id,
+            'first_name' => sanitize_text_field($step1['first_name'] ?? ''),
+            'last_name' => sanitize_text_field($step1['last_name'] ?? ''),
+        ]);
+
+        // Store meta
+        update_user_meta($user_id, 'tocc_title', sanitize_text_field($step1['title'] ?? ''));
+        update_user_meta($user_id, 'tocc_job_title', sanitize_text_field($step1['job_title'] ?? ''));
+        update_user_meta($user_id, 'tocc_phone', sanitize_text_field($step1['phone'] ?? ''));
+
+        // Store member details
+        if (!empty($step2['company_name'])) {
+            self::store_member_details($user_id, $step2);
+        }
+
+        // Store payment info
+        if (!empty($step3['payment_method'])) {
+            self::store_payment_info($user_id, $step3);
+        }
+
+        $user = new WP_User($user_id);
+        $user->set_role('subscriber');
+
+        return true;
     }
 }
 
