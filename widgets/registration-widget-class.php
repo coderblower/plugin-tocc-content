@@ -996,7 +996,7 @@ class Registration_Widget extends Widget_Base {
                 
                 if (!stripe) {
                     document.getElementById('tocc-overlay').classList.remove('active');
-                    alert('Stripe configuration error');
+                    alert('Stripe configuration error: Missing publishable key');
                     return;
                 }
 
@@ -1013,15 +1013,26 @@ class Registration_Widget extends Widget_Base {
                         amount: 73200 // Amount in cents
                     })
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network error: ' + response.status);
+                    }
+                    return response.json();
+                })
                 .then(data => {
-                    if (!data.success || !data.client_secret) {
-                        throw new Error(data.message || 'Payment setup failed');
+                    console.log('Payment Intent Response:', data);
+                    
+                    if (!data.success) {
+                        throw new Error(data.data?.message || 'Payment setup failed');
+                    }
+                    
+                    if (!data.data?.client_secret) {
+                        throw new Error('Server error: No client_secret received');
                     }
 
                     // Use Stripe Payment Element
                     const elements = stripe.elements({
-                        clientSecret: data.client_secret
+                        clientSecret: data.data.client_secret
                     });
 
                     const paymentElement = elements.create('payment');
@@ -1063,8 +1074,9 @@ class Registration_Widget extends Widget_Base {
                     });
                 })
                 .catch(error => {
+                    console.error('Payment Error:', error);
                     document.getElementById('tocc-overlay').classList.remove('active');
-                    alert('Error: ' + error.message);
+                    alert('Payment Error: ' + error.message);
                 });
             }
 

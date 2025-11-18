@@ -369,23 +369,36 @@ class TOCC_Registration_Handler {
                 CURLOPT_POSTFIELDS => http_build_query($post_fields),
                 CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
                 CURLOPT_USERPWD => $stripe_secret . ':',
+                CURLOPT_TIMEOUT => 10, // 10 second timeout
+                CURLOPT_CONNECTTIMEOUT => 5, // 5 second connection timeout
                 CURLOPT_HTTPHEADER => [
                     'Content-Type: application/x-www-form-urlencoded',
                 ],
+                CURLOPT_SSL_VERIFYPEER => true,
+                CURLOPT_SSL_VERIFYHOST => 2,
             ]);
 
             $response = curl_exec($curl);
+            $curl_error = curl_error($curl);
             $http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
             curl_close($curl);
 
+            // Check for cURL errors
+            if ($response === false) {
+                throw new Exception('Stripe connection error: ' . $curl_error);
+            }
+
             if ($http_code !== 200) {
-                throw new Exception('Stripe API error: ' . $response);
+                error_log('Stripe API Error - HTTP ' . $http_code . ': ' . $response);
+                $error_data = json_decode($response, true);
+                $error_msg = isset($error_data['error']['message']) ? $error_data['error']['message'] : 'API returned HTTP ' . $http_code;
+                throw new Exception('Stripe API error: ' . $error_msg);
             }
 
             $payment_intent = json_decode($response, true);
 
             if (!isset($payment_intent['client_secret'])) {
-                throw new Exception('Failed to create payment intent');
+                throw new Exception('Failed to create payment intent - no client_secret');
             }
 
             // Store in transient for later verification
@@ -397,6 +410,7 @@ class TOCC_Registration_Handler {
             ]);
 
         } catch (Exception $e) {
+            error_log('TOCC Payment Error: ' . $e->getMessage());
             wp_send_json_error(['message' => $e->getMessage()]);
         }
     }
