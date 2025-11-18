@@ -1,13 +1,19 @@
 <?php
 /**
  * Plugin Name: Tabbed USP Widget for Elementor
- * Description: Custom Elementor widgets including Tabbed USP, Vertical Tabs, and Stats Section with icons, titles, summaries, and detailed content items.
- * Version: 2.2.0
+ * Description: Custom Elementor widgets including Tabbed USP, Vertical Tabs, Stats Section, and Registration Form with payment tracking.
+ * Version: 2.3.0
  * Author: Your Name
  * Text Domain: tabbed-usp-widget
  */ 
 
 if (!defined('ABSPATH')) exit;
+
+/**
+ * Load Registration Handler
+ */
+require_once(__DIR__ . '/includes/registration-handler.php');
+require_once(__DIR__ . '/includes/admin-dashboard.php');
 
 /**
  * Enqueue Elementor Editor Scripts
@@ -72,7 +78,12 @@ function register_tabbed_usp_widgets($widgets_manager) {
     require_once(__DIR__ . '/widgets/stats-section-widget-class.php');
     $widgets_manager->register(new \ElementorStatsSection\Stats_Section_Widget());
 
+    // Register Split Screen Slider Widget
     require_once(__DIR__ . '/widgets/split-screen-slider-widget-class.php');
     $widgets_manager->register(new \ElementorSplitScreenSlider\Split_Screen_Slider_Widget());
+
+    // Register Registration Widget
+    require_once(__DIR__ . '/widgets/registration-widget-class.php');
+    $widgets_manager->register(new \ElementorTOCCRegistration\Registration_Widget());
 }
 add_action('elementor/widgets/register', 'register_tabbed_usp_widgets');
