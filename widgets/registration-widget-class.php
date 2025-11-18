@@ -178,6 +178,16 @@ class Registration_Widget extends Widget_Base {
     protected function render() {
         $settings = $this->get_settings_for_display();
         $widget_id = 'tocc-reg-' . $this->get_id();
+        
+        // Get Stripe publishable key from widget or WordPress settings
+        $stripe_key = !empty($settings['stripe_publishable_key']) 
+            ? $settings['stripe_publishable_key'] 
+            : get_option('tocc_stripe_publishable_key', '');
+        
+        // Get login redirect URL
+        $redirect_url = !empty($settings['login_redirect_url']['url']) 
+            ? $settings['login_redirect_url']['url'] 
+            : wp_login_url();
         ?>
 
         <div class="tocc-registration-widget" id="<?php echo esc_attr($widget_id); ?>">
@@ -992,11 +1002,20 @@ class Registration_Widget extends Widget_Base {
             }
 
             function toccProcessStripePayment() {
-                const stripe = Stripe('<?php echo esc_js($settings['stripe_publishable_key'] ?? ''); ?>');
+                const stripeKey = '<?php echo esc_js($stripe_key); ?>';
+                
+                if (!stripeKey || stripeKey.trim() === '') {
+                    document.getElementById('tocc-overlay').classList.remove('active');
+                    alert('Stripe is not configured. Please add your Stripe publishable key in the widget settings or WordPress admin.');
+                    console.error('Stripe publishable key is missing');
+                    return;
+                }
+                
+                const stripe = Stripe(stripeKey);
                 
                 if (!stripe) {
                     document.getElementById('tocc-overlay').classList.remove('active');
-                    alert('Stripe configuration error: Missing publishable key');
+                    alert('Stripe initialization failed. Please check your publishable key.');
                     return;
                 }
 
@@ -1098,7 +1117,7 @@ class Registration_Widget extends Widget_Base {
                     document.getElementById('tocc-overlay').classList.remove('active');
                     
                     if (data.success) {
-                        const redirectUrl = '<?php echo esc_js($settings['login_redirect_url']['url'] ?? wp_login_url()); ?>';
+                        const redirectUrl = '<?php echo esc_js($redirect_url); ?>';
                         window.location.href = redirectUrl;
                     } else {
                         alert('Error: ' + (data.message || 'Registration failed'));
