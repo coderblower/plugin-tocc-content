@@ -184,6 +184,21 @@ class Registration_Widget extends Widget_Base {
             ? $settings['stripe_publishable_key'] 
             : get_option('tocc_stripe_publishable_key', '');
         
+        // Validate Stripe key
+        if (!empty($stripe_key)) {
+            // Check if secret key was used instead of publishable key
+            if (strpos($stripe_key, 'sk_') === 0) {
+                echo '<div style="background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 4px; margin: 20px; color: #856404;">';
+                echo '<strong>⚠️ Stripe Configuration Error:</strong> ';
+                echo 'You appear to be using your <strong>Secret Key</strong> instead of your <strong>Publishable Key</strong>. ';
+                echo 'Secret keys start with "sk_" and should NEVER be used in frontend code. ';
+                echo 'Please use your Publishable Key (starts with "pk_") instead. ';
+                echo 'Update this in WordPress Admin > LCCI Registrations > Stripe Settings.';
+                echo '</div>';
+                return;
+            }
+        }
+        
         // Get login redirect URL
         $redirect_url = !empty($settings['login_redirect_url']['url']) 
             ? $settings['login_redirect_url']['url'] 
@@ -1008,6 +1023,14 @@ class Registration_Widget extends Widget_Base {
                     document.getElementById('tocc-overlay').classList.remove('active');
                     alert('Stripe is not configured. Please add your Stripe publishable key in the widget settings or WordPress admin.');
                     console.error('Stripe publishable key is missing');
+                    return;
+                }
+                
+                // Check if secret key was mistakenly used
+                if (stripeKey.startsWith('sk_')) {
+                    document.getElementById('tocc-overlay').classList.remove('active');
+                    alert('❌ ERROR: You are using your Secret Key instead of your Publishable Key!\n\nSecret keys start with "sk_" and must NEVER be used in frontend code.\n\nPlease update your Stripe Settings with your Publishable Key (starts with "pk_")');
+                    console.error('Secret key detected instead of publishable key:', stripeKey.substring(0, 20) + '...');
                     return;
                 }
                 
