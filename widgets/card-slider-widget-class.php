@@ -79,7 +79,7 @@ class Card_Slider_Widget extends Widget_Base {
             'card_description',
             [
                 'label' => 'Card Description',
-                'type' => Controls_Manager::TEXTAREA,
+                'type' => Controls_Manager::WYSIWYG,
                 'placeholder' => 'Enter card description',
                 'default' => 'Enter your card description here',
             ]
@@ -257,7 +257,7 @@ class Card_Slider_Widget extends Widget_Base {
                             <div class="card-slider-card">
                                 <div class="card-slider-badge"><?php echo esc_html($card['card_badge']); ?></div>
                                 <h3><?php echo esc_html($card['card_title']); ?></h3>
-                                <p><?php echo esc_html($card['card_description']); ?></p>
+                                <div class="card-slider-description"><?php echo wp_kses_post($card['card_description']); ?></div>
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -331,8 +331,7 @@ class Card_Slider_Widget extends Widget_Base {
                     background: white;
                     border: 3px solid #1a3a52;
                     border-radius: 10px;
-                    padding: 40px;
-                    padding-top: 45px;
+                    padding: 0;
                     min-height: 280px;
                     width: 360px;
                     display: flex;
@@ -343,7 +342,7 @@ class Card_Slider_Widget extends Widget_Base {
                 .card-slider-badge {
                     background: #1a3a52;
                     color: white;
-                    padding: 8px 16px;
+                    padding: 12px 20px;
                     border-radius: 0 0 0 8px;
                     font-size: 0.875rem;
                     font-weight: 600;
@@ -357,17 +356,31 @@ class Card_Slider_Widget extends Widget_Base {
                 .card-slider-card h3 {
                     color: #1a3a52;
                     font-size: 1.4rem;
-                    margin-bottom: 20px;
-                    margin-top: 25px;
+                    margin-bottom: 0;
+                    margin-top: 0;
                     line-height: 1.4;
                     font-weight: 700;
+                    padding: 40px 40px 0 40px;
+                    padding-top: 55px;
                 }
 
-                .card-slider-card p {
+                .card-slider-description {
                     color: #5a6c7d;
                     line-height: 1.7;
                     font-size: 1.05rem;
                     flex-grow: 1;
+                    padding: 15px 40px 40px 40px;
+                }
+
+                .card-slider-description p {
+                    margin: 0;
+                    color: #5a6c7d;
+                    line-height: 1.7;
+                    font-size: 1.05rem;
+                }
+
+                .card-slider-description p:not(:last-child) {
+                    margin-bottom: 12px;
                 }
 
                 .card-slider-controls {
@@ -462,17 +475,19 @@ class Card_Slider_Widget extends Widget_Base {
 
                     .card-slider-card {
                         width: auto;
-                        padding: 35px;
-                        padding-top: 40px;
+                        padding: 0;
                         min-height: 260px;
                     }
 
                     .card-slider-card h3 {
                         font-size: 1.2rem;
-                        margin-bottom: 15px;
+                        margin-bottom: 0;
+                        padding: 35px 35px 0 35px;
+                        padding-top: 50px;
                     }
 
-                    .card-slider-card p {
+                    .card-slider-description {
+                        padding: 15px 35px 35px 35px;
                         font-size: 0.95rem;
                     }
 
