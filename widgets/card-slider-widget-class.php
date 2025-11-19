@@ -284,7 +284,7 @@ class Card_Slider_Widget extends Widget_Base {
 
             <style>
                 #<?php echo esc_attr($widget_id); ?> {
-                    padding: 40px 20px;
+                    padding: 60px 40px;
                 }
 
                 #<?php echo esc_attr($widget_id); ?> * {
@@ -296,13 +296,13 @@ class Card_Slider_Widget extends Widget_Base {
                 .card-slider-title {
                     color: #1a3a52;
                     font-size: 2.5rem;
-                    margin-bottom: 40px;
+                    margin-bottom: 60px;
                     font-weight: 600;
                 }
 
                 .card-slider-wrapper {
                     position: relative;
-                    padding-bottom: 60px;
+                    padding-bottom: 80px;
                 }
 
                 .card-slider-container {
@@ -322,19 +322,19 @@ class Card_Slider_Widget extends Widget_Base {
                     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
                     grid-auto-flow: column;
                     grid-template-rows: repeat(2, 1fr);
-                    gap: 20px;
-                    padding: 10px 0;
+                    gap: 30px;
+                    padding: 15px 0;
                     width: max-content;
                 }
 
                 .card-slider-card {
                     background: white;
-                    border: 1px solid #d0d5dd;
-                    border-radius: 8px;
-                    padding: 30px;
-                    padding-top: 10px;
-                    min-height: 240px;
-                    width: 340px;
+                    border: 3px solid #1a3a52;
+                    border-radius: 10px;
+                    padding: 40px;
+                    padding-top: 45px;
+                    min-height: 280px;
+                    width: 360px;
                     display: flex;
                     flex-direction: column;
                     position: relative;
@@ -343,42 +343,47 @@ class Card_Slider_Widget extends Widget_Base {
                 .card-slider-badge {
                     background: #1a3a52;
                     color: white;
-                    padding: 6px 14px;
-                    border-radius: 0 0 0 6px;
+                    padding: 8px 16px;
+                    border-radius: 0 0 0 8px;
                     font-size: 0.875rem;
+                    font-weight: 600;
                     width: fit-content;
-                    font-weight: 500;
                     position: absolute;
                     top: 0;
                     right: 0;
+                    letter-spacing: 0.5px;
                 }
 
                 .card-slider-card h3 {
                     color: #1a3a52;
-                    font-size: 1.375rem;
-                    margin-bottom: 16px;
-                    margin-top: 20px;
-                    line-height: 1.3;
+                    font-size: 1.4rem;
+                    margin-bottom: 20px;
+                    margin-top: 25px;
+                    line-height: 1.4;
+                    font-weight: 700;
                 }
 
                 .card-slider-card p {
-                    color: #475467;
-                    line-height: 1.6;
-                    font-size: 1rem;
+                    color: #5a6c7d;
+                    line-height: 1.7;
+                    font-size: 1.05rem;
+                    flex-grow: 1;
                 }
 
                 .card-slider-controls {
                     display: flex;
                     align-items: center;
-                    gap: 20px;
-                    margin-top: 30px;
+                    justify-content: space-between;
+                    gap: 30px;
+                    margin-top: 50px;
+                    padding: 0 20px;
                 }
 
                 .card-slider-progress-container {
                     flex: 1;
-                    height: 4px;
+                    height: 6px;
                     background: #e5e7eb;
-                    border-radius: 2px;
+                    border-radius: 3px;
                     overflow: hidden;
                 }
 
@@ -386,35 +391,41 @@ class Card_Slider_Widget extends Widget_Base {
                     height: 100%;
                     background: #ff6b35;
                     width: 50%;
-                    transition: width 0.1s ease;
+                    transition: width 0.2s ease;
                 }
 
                 .card-slider-nav-buttons {
                     display: flex;
-                    gap: 10px;
+                    gap: 15px;
+                    flex-shrink: 0;
                 }
 
                 .card-slider-nav-btn {
-                    width: 40px;
-                    height: 40px;
+                    width: 48px;
+                    height: 48px;
                     border-radius: 50%;
-                    border: 1px solid #d0d5dd;
+                    border: 2px solid #d0d5dd;
                     background: white;
                     cursor: pointer;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    transition: all 0.2s;
+                    transition: all 0.3s ease;
                     padding: 0;
+                    flex-shrink: 0;
                 }
 
                 .card-slider-nav-btn:hover {
-                    background: #f9fafb;
+                    background: #1a3a52;
                     border-color: #1a3a52;
                 }
 
+                .card-slider-nav-btn:hover svg {
+                    stroke: white;
+                }
+
                 .card-slider-nav-btn:disabled {
-                    opacity: 0.5;
+                    opacity: 0.4;
                     cursor: not-allowed;
                 }
 
@@ -423,24 +434,61 @@ class Card_Slider_Widget extends Widget_Base {
                     border-color: #d0d5dd;
                 }
 
-                .card-slider-nav-btn svg {
-                    width: 20px;
-                    height: 20px;
+                .card-slider-nav-btn:disabled:hover svg {
                     stroke: #1a3a52;
                 }
 
+                .card-slider-nav-btn svg {
+                    width: 22px;
+                    height: 22px;
+                    stroke: #1a3a52;
+                    transition: stroke 0.3s ease;
+                }
+
                 @media (max-width: 768px) {
+                    #<?php echo esc_attr($widget_id); ?> {
+                        padding: 40px 20px;
+                    }
+
                     .card-slider-title {
                         font-size: 2rem;
+                        margin-bottom: 40px;
                     }
 
                     .card-slider-grid {
-                        grid-auto-columns: minmax(280px, 1fr);
+                        grid-auto-columns: minmax(300px, 1fr);
+                        gap: 25px;
                     }
 
                     .card-slider-card {
-                        padding: 24px;
                         width: auto;
+                        padding: 35px;
+                        padding-top: 40px;
+                        min-height: 260px;
+                    }
+
+                    .card-slider-card h3 {
+                        font-size: 1.2rem;
+                        margin-bottom: 15px;
+                    }
+
+                    .card-slider-card p {
+                        font-size: 0.95rem;
+                    }
+
+                    .card-slider-controls {
+                        gap: 20px;
+                        margin-top: 40px;
+                    }
+
+                    .card-slider-nav-btn {
+                        width: 44px;
+                        height: 44px;
+                    }
+
+                    .card-slider-nav-btn svg {
+                        width: 20px;
+                        height: 20px;
                     }
                 }
             </style>
