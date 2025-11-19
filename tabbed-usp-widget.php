@@ -86,5 +86,9 @@ function register_tabbed_usp_widgets($widgets_manager) {
     // Register Registration Widget
     require_once(__DIR__ . '/widgets/registration-widget-class.php');
     $widgets_manager->register(new \ElementorTOCCRegistration\Registration_Widget());
+
+    // Register Card Slider Widget
+    require_once(__DIR__ . '/widgets/card-slider-widget-class.php');
+    $widgets_manager->register(new \ElementorTOCCCardSlider\Card_Slider_Widget());
 }
 add_action('elementor/widgets/register', 'register_tabbed_usp_widgets');
