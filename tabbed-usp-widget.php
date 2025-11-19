@@ -90,5 +90,9 @@ function register_tabbed_usp_widgets($widgets_manager) {
     // Register Card Slider Widget
     require_once(__DIR__ . '/widgets/card-slider-widget-class.php');
     $widgets_manager->register(new \ElementorTOCCCardSlider\Card_Slider_Widget());
+
+    // Register Pricing Calculator Widget
+    require_once(__DIR__ . '/widgets/pricing-calculator-widget-class.php');
+    $widgets_manager->register(new \ElementorTOCCPricingCalculator\Pricing_Calculator_Widget());
 }
 add_action('elementor/widgets/register', 'register_tabbed_usp_widgets');
