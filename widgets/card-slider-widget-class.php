@@ -319,13 +319,22 @@ class Card_Slider_Widget extends Widget_Base {
 
                 .card-slider-grid {
                     display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-                    grid-auto-flow: dense;
+                    grid-template-columns: repeat(2, 360px);
+                    grid-auto-flow: row;
                     grid-auto-rows: auto;
                     gap: 30px;
                     padding: 15px 0;
-                    width: max-content;
+                    width: auto;
                     align-items: start;
+                }
+
+                .card-slider-card:nth-child(odd) {
+                    grid-column: 1;
+                }
+
+                .card-slider-card:nth-child(even) {
+                    grid-column: 2;
+                    margin-top: 15px;
                 }
 
                 .card-slider-card {
@@ -340,12 +349,6 @@ class Card_Slider_Widget extends Widget_Base {
                     position: relative;
                     height: auto;
                 }
-
-                .card-slider-card:nth-child(even) {
-                    margin-top: 15px;
-                }
-
-                .card-slider-badge {
                     background: #1a3a52;
                     color: white;
                     padding: 12px 20px;
