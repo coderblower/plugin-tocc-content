@@ -320,11 +320,12 @@ class Card_Slider_Widget extends Widget_Base {
                 .card-slider-grid {
                     display: grid;
                     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-                    grid-auto-flow: column;
-                    grid-template-rows: repeat(2, 1fr);
+                    grid-auto-flow: dense;
+                    grid-auto-rows: auto;
                     gap: 30px;
                     padding: 15px 0;
                     width: max-content;
+                    align-items: start;
                 }
 
                 .card-slider-card {
@@ -337,6 +338,11 @@ class Card_Slider_Widget extends Widget_Base {
                     display: flex;
                     flex-direction: column;
                     position: relative;
+                    height: auto;
+                }
+
+                .card-slider-card:nth-child(even) {
+                    margin-top: 15px;
                 }
 
                 .card-slider-badge {
