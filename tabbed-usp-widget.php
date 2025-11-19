@@ -94,5 +94,9 @@ function register_tabbed_usp_widgets($widgets_manager) {
     // Register Pricing Calculator Widget
     require_once(__DIR__ . '/widgets/pricing-calculator-widget-class.php');
     $widgets_manager->register(new \ElementorTOCCPricingCalculator\Pricing_Calculator_Widget());
+
+    // Register Login Register Widget
+    require_once(__DIR__ . '/widgets/login-register-widget-class.php');
+    $widgets_manager->register(new \ElementorTOCCLoginRegister\Login_Register_Widget());
 }
 add_action('elementor/widgets/register', 'register_tabbed_usp_widgets');
