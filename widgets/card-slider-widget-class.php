@@ -103,18 +103,33 @@ class Card_Slider_Widget extends Widget_Base {
                 'fields' => $repeater->get_controls(),
                 'default' => [
                     [
-                        'card_title' => 'LCCI Workspaces',
-                        'card_description' => 'Free and open access to LCCI\'s Members\' Lounge',
+                        'card_title' => 'Business Advice',
+                        'card_description' => 'We offer free, practical advice to support businesses across a range of areas.',
                         'card_badge' => 'Membership',
                     ],
                     [
-                        'card_title' => 'Business Network',
-                        'card_description' => 'Connect with the wider LCCI community',
+                        'card_title' => 'Exclusive Member Offers',
+                        'card_description' => 'Enjoy access to a number of exclusive offers and discounts on business support services, leisure and marketing benefits.',
                         'card_badge' => 'Membership',
                     ],
                     [
-                        'card_title' => 'Networking Events',
-                        'card_description' => 'Attend LCCI\'s 200+ business events',
+                        'card_title' => 'Procurement Hub',
+                        'card_description' => 'Navigate the procurement process, search for new opportunities and get practical advice to help your business create winning submissions.',
+                        'card_badge' => 'Membership',
+                    ],
+                    [
+                        'card_title' => 'AA',
+                        'card_description' => 'Save 67% on your business breakdown and fleet costs with LCCI membership. Access exclusive rates on roadside assistance, fuel assist and car rental with the AA.',
+                        'card_badge' => 'Membership',
+                    ],
+                    [
+                        'card_title' => 'LCCI Logo',
+                        'card_description' => 'Feature the \'proud to be a LCCI member\' logo on your website and other marketing materials.',
+                        'card_badge' => 'Membership',
+                    ],
+                    [
+                        'card_title' => 'International Trade Training Courses',
+                        'card_description' => 'The latest tutorials in doing business abroad through our regular webinars and member events.',
                         'card_badge' => 'Membership',
                     ],
                 ],
@@ -172,7 +187,7 @@ class Card_Slider_Widget extends Widget_Base {
             [
                 'label' => 'Card Background Color',
                 'type' => Controls_Manager::COLOR,
-                'default' => '#ffffff',
+                'default' => '#f8f9fa',
                 'selectors' => [
                     '{{WRAPPER}} .card-slider-card' => 'background-color: {{VALUE}}',
                 ],
@@ -184,7 +199,7 @@ class Card_Slider_Widget extends Widget_Base {
             [
                 'label' => 'Card Border Color',
                 'type' => Controls_Manager::COLOR,
-                'default' => '#d0d5dd',
+                'default' => '#1a3a52',
                 'selectors' => [
                     '{{WRAPPER}} .card-slider-card' => 'border-color: {{VALUE}}',
                 ],
@@ -319,10 +334,10 @@ class Card_Slider_Widget extends Widget_Base {
 
                 .card-slider-grid {
                     display: grid;
-                    grid-template-columns: repeat(2, 360px);
+                    grid-template-columns: repeat(2, 320px);
                     grid-auto-flow: row;
                     grid-auto-rows: auto;
-                    gap: 30px;
+                    gap: 24px;
                     padding: 15px 0;
                     width: auto;
                     align-items: start;
@@ -338,54 +353,56 @@ class Card_Slider_Widget extends Widget_Base {
                 }
 
                 .card-slider-card {
-                    background: white;
-                    border: 3px solid #1a3a52;
-                    border-radius: 10px;
+                    background: #f8f9fa;
+                    border: 2px solid #1a3a52;
+                    border-radius: 8px;
                     padding: 0;
-                    min-height: 280px;
-                    width: 360px;
+                    min-height: 240px;
+                    width: 320px;
                     display: flex;
                     flex-direction: column;
                     position: relative;
                     height: auto;
                 }
+
+                .card-slider-badge {
                     background: #1a3a52;
                     color: white;
-                    padding: 12px 20px;
-                    border-radius: 0 0 0 8px;
-                    font-size: 0.875rem;
+                    padding: 8px 16px;
+                    border-radius: 0;
+                    font-size: 0.8rem;
                     font-weight: 600;
                     width: fit-content;
                     position: absolute;
                     top: 0;
                     right: 0;
-                    letter-spacing: 0.5px;
+                    letter-spacing: 0.3px;
                 }
 
                 .card-slider-card h3 {
                     color: #1a3a52;
-                    font-size: 1.4rem;
+                    font-size: 1.35rem;
                     margin-bottom: 0;
                     margin-top: 0;
-                    line-height: 1.4;
+                    line-height: 1.3;
                     font-weight: 700;
-                    padding: 40px 40px 0 40px;
-                    padding-top: 55px;
+                    padding: 32px 28px 0 28px;
+                    padding-top: 50px;
                 }
 
                 .card-slider-description {
-                    color: #5a6c7d;
-                    line-height: 1.7;
-                    font-size: 1.05rem;
+                    color: #344054;
+                    line-height: 1.6;
+                    font-size: 1rem;
                     flex-grow: 1;
-                    padding: 15px 40px 40px 40px;
+                    padding: 14px 28px 32px 28px;
                 }
 
                 .card-slider-description p {
                     margin: 0;
-                    color: #5a6c7d;
-                    line-height: 1.7;
-                    font-size: 1.05rem;
+                    color: #344054;
+                    line-height: 1.6;
+                    font-size: 1rem;
                 }
 
                 .card-slider-description p:not(:last-child) {
@@ -478,26 +495,24 @@ class Card_Slider_Widget extends Widget_Base {
                     }
 
                     .card-slider-grid {
-                        grid-auto-columns: minmax(300px, 1fr);
-                        gap: 25px;
+                        grid-template-columns: repeat(2, 280px);
+                        gap: 20px;
                     }
 
                     .card-slider-card {
-                        width: auto;
-                        padding: 0;
-                        min-height: 260px;
+                        width: 280px;
+                        min-height: 220px;
                     }
 
                     .card-slider-card h3 {
-                        font-size: 1.2rem;
-                        margin-bottom: 0;
-                        padding: 35px 35px 0 35px;
-                        padding-top: 50px;
+                        font-size: 1.15rem;
+                        padding: 28px 24px 0 24px;
+                        padding-top: 45px;
                     }
 
                     .card-slider-description {
-                        padding: 15px 35px 35px 35px;
-                        font-size: 0.95rem;
+                        padding: 12px 24px 28px 24px;
+                        font-size: 0.9rem;
                     }
 
                     .card-slider-controls {
