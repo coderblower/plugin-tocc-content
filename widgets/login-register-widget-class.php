@@ -40,6 +40,10 @@ class Login_Register_Widget extends Widget_Base {
         return ['general'];
     }
 
+    public function get_keywords() {
+        return ['login', 'register', 'authentication', 'form', 'account', 'user', 'signin', 'signup'];
+    }
+
     protected function register_controls() {
         // Section: Header
         $this->start_controls_section(

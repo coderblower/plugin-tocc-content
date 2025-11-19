@@ -38,6 +38,10 @@ class Card_Slider_Widget extends Widget_Base {
         return ['general'];
     }
 
+    public function get_keywords() {
+        return ['card', 'slider', 'carousel', 'scrollable', 'horizontal', 'benefits', 'features'];
+    }
+
     protected function register_controls() {
         // Section: Content
         $this->start_controls_section(

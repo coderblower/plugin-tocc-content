@@ -39,6 +39,10 @@ class Pricing_Calculator_Widget extends Widget_Base {
         return ['general'];
     }
 
+    public function get_keywords() {
+        return ['pricing', 'calculator', 'cost', 'vat', 'discount', 'membership', 'pricing tier'];
+    }
+
     protected function register_controls() {
         // Section: Pricing Data
         $this->start_controls_section(
